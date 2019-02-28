@@ -162,6 +162,26 @@
         "language": "javascript",
         "path": "./extension/snippets/vrealize.json"
       }
+    ],
+    "languages": [
+      {
+        "id": "vro-action-log",
+        "aliases": [
+          "vRO Action Log"
+        ],
+        "firstLine": "^#vro-action-log",
+        "mimetypes": [
+          "text/x-code-output",
+          "x-code-output"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "vro-action-log",
+        "scopeName": "vro.action.log",
+        "path": "./extension/syntaxes/log.tmLanguage"
+      }
     ]
   },
   "_moduleAliases": {

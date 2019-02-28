@@ -27,7 +27,7 @@ export class RunAction extends Command {
     private readonly logger = Logger.get("RunAction")
     private readonly restClient: VroRestClient
     private readonly vrotsc: VrotscCliProxy
-    private readonly outputChannel = vscode.window.createOutputChannel(OutputChannels.RunActionLogs)
+    private readonly outputChannel: vscode.OutputChannel
     private runtimeExceptionDecoration: vscode.TextEditorDecorationType
 
     private running = false
@@ -40,6 +40,8 @@ export class RunAction extends Command {
         super()
         this.restClient = new VroRestClient(config, environment)
         this.vrotsc = new VrotscCliProxy(this.logger)
+        this.outputChannel = vscode.window.createOutputChannel(OutputChannels.RunActionLogs)
+        this.outputChannel.appendLine("#vro-action-log") // first line is used to provide highlighting
     }
 
     register(context: vscode.ExtensionContext,
