@@ -7,13 +7,13 @@ import * as xmlParser from "fast-xml-parser"
 import * as fs from "fs-extra"
 
 export class PomFile {
-
     static readonly ParentGroupByArtifact = {
         "base-package": "com.vmware.pscoe.o11n",
         "actions-package": "com.vmware.pscoe.o11n",
         "xml-package": "com.vmware.pscoe.o11n",
         "typescript-project": "com.vmware.pscoe.o11n",
-        "vra-package": "com.vmware.pscoe.vra"
+        "vra-package": "com.vmware.pscoe.vra",
+        "vra-ng-package": "com.vmware.pscoe.vra-ng"
     }
 
     readonly jsonContent: any
@@ -52,7 +52,7 @@ export class PomFile {
         return modules.module || []
     }
 
-    constructor(readonly filePath: string) {
+    constructor(public readonly filePath: string) {
         const pomContent = fs.readFileSync(filePath, { encoding: "utf8" })
         this.jsonContent = xmlParser.parse(pomContent)
 
@@ -71,5 +71,4 @@ export class PomFile {
             throw new Error(`Not a valid vRealize project parent ID - ${groupId}:${artifactId} [file = ${filePath}]`)
         }
     }
-
 }

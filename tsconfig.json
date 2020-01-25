@@ -19,11 +19,12 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
-    "noEmitOnError": true,
+    "noEmitOnError": false,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "suppressImplicitAnyIndexErrors": true,
     "strictNullChecks": true,
+    "strictBindCallApply": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "removeComments": true,
@@ -32,7 +33,5 @@
     "composite": true
   },
   "include": [],
-  "references": [
-    {"path": "./extension"}
-  ]
+  "references": [{ "path": "./extension" }]
 }

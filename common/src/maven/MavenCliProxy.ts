@@ -3,12 +3,15 @@
  * SPDX-License-Identifier: MIT
  */
 
-import * as fs from "fs-extra"
 import * as path from "path"
 
-import { proc, Logger } from ".."
+import * as fs from "fs-extra"
+
+
 import { BaseEnvironment } from "../platform"
 import { MavenInfo } from "../types"
+
+import { Logger, proc } from ".."
 
 const archetypeIdByProjectType: { [key: string]: string } = {
     "vro-ts": "package-typescript-archetype",
@@ -16,14 +19,12 @@ const archetypeIdByProjectType: { [key: string]: string } = {
     "vro-xml": "package-xml-archetype",
     "vro-mixed": "package-mixed-archetype",
     "vra-yaml": "package-vra-archetype",
-    "vra-vro": "package-vrealize-archetype"
+    "vra-vro": "package-vrealize-archetype",
+    "vra-ng": "package-vra-ng-archetype"
 }
 
 export class MavenCliProxy {
-
-    constructor(private environment: BaseEnvironment,
-                private mavenSettings: MavenInfo,
-                private logger: Logger) {
+    constructor(private environment: BaseEnvironment, private mavenSettings: MavenInfo, private logger: Logger) {
         logger.debug(`Initializing Maven CLI proxy for profile '${mavenSettings.profile}'`)
     }
 
@@ -49,24 +50,33 @@ export class MavenCliProxy {
         return token.value
     }
 
-    createProject(projectType: string,
-                  groupId: string,
-                  artifactId: string,
-                  destinationDir: string,
-                  requiresWorkflows: boolean,
-                  workflowsPath?: string): Promise<proc.CmdResult> {
+    createProject(
+        projectType: string,
+        groupId: string,
+        artifactId: string,
+        destinationDir: string,
+        requiresWorkflows: boolean,
+        workflowsPath?: string
+    ): Promise<proc.CmdResult> {
         const archetypeId = archetypeIdByProjectType[projectType]
 
         if (!archetypeId) {
-            return Promise.reject("Unsupported project type: " + projectType)
+            return Promise.reject(`Unsupported project type: ${projectType}`)
         }
 
-        const archetypeGroup = projectType === "vra-yaml" ? "vra" : "o11n"
+        let archetypeGroup = "o11n"
 
-        let command = `mvn archetype:generate -DinteractiveMode=false ` +
+        if (projectType === "vra-yaml") {
+            archetypeGroup = "vra"
+        } else if (projectType === "vra-ng") {
+            archetypeGroup = "vra-ng"
+        }
+
+        let command =
+            `mvn archetype:generate -DinteractiveMode=false ` +
             `-DarchetypeGroupId=com.vmware.pscoe.${archetypeGroup}.archetypes ` +
             `-DarchetypeArtifactId=${archetypeId} ` +
-            `-DarchetypeVersion=1.5.2-SNAPSHOT ` +
+            `-DarchetypeVersion=${this.environment.buildToolsVersion} ` +
             `-DgroupId=${groupId} ` +
             `-DartifactId=${artifactId}`
 
@@ -81,12 +91,28 @@ export class MavenCliProxy {
         return proc.exec(command, { cwd: destinationDir }, this.logger)
     }
 
-    private readTokenFile(filePath: string): { value: string, expirationDate: string } {
+    copyDependency(
+        groupId: string,
+        artifactId: string,
+        version: string,
+        packaging: string,
+        destinationDir: string
+    ): Promise<proc.CmdResult> {
+        const command =
+            `mvn dependency:copy ` +
+            `-Dartifact=${groupId}:${artifactId}:${version}:${packaging} ` +
+            `-DoutputDirectory="${destinationDir}" ` +
+            `-Dmdep.stripVersion=true `
+
+        return proc.exec(command, { cwd: destinationDir }, this.logger)
+    }
+
+    private readTokenFile(filePath: string): { value: string; expirationDate: string } {
         const content = fs.readFileSync(filePath, { encoding: "utf8" })
         const token = JSON.parse(content)
 
         if (!token || !token.value || !token.expirationDate) {
-            throw new Error("Missing or invalid token file: " + filePath)
+            throw new Error(`Missing or invalid token file: ${filePath}`)
         }
 
         return token
@@ -105,14 +131,14 @@ export class MavenCliProxy {
     <parent>
 		<groupId>com.vmware.pscoe.o11n</groupId>
 		<artifactId>base-package</artifactId>
-		<version>${this.environment.version}</version>
+		<version>${this.environment.buildToolsVersion}</version>
 	</parent>
 </project>`
 
         fs.writeFileSync(filePath, content)
     }
 
-    private isExpired(token: { value: string, expirationDate: string }): boolean {
+    private isExpired(token: { value: string; expirationDate: string }): boolean {
         const expirationDate = Date.parse(token.expirationDate)
         const now = Date.now()
 

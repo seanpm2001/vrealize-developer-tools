@@ -4,9 +4,10 @@
  */
 
 import * as path from "path"
+
 import * as tmp from "tmp"
 
-import { proc, Logger } from ".."
+import { Logger, proc } from ".."
 
 export class VrotscCliProxy {
     constructor(private logger: Logger) {
@@ -23,7 +24,8 @@ export class VrotscCliProxy {
      */
     async compileFile(inputFile: string, projectDirPath: string, namespace?: string): Promise<string> {
         const outputDir = tmp.dirSync({ prefix: "o11n-ts-" }).name
-        let command = `vrotsc src/ --actionsOut ${outputDir} --files ${inputFile}`
+        const vrotscBin = path.join(".", "node_modules", "@vmware-pscoe", "vrotsc", "bin", "vrotsc")
+        let command = `${vrotscBin} src/ --actionsOut ${outputDir} --files ${inputFile}`
 
         if (namespace) {
             command += ` -n ${namespace}`

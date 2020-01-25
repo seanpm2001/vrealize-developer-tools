@@ -4,13 +4,13 @@
  */
 
 import * as path from "path"
-import { uri, AutoWire, Logger, MavenCliProxy, ProjectPickInfo, ProjectType } from "vrealize-common"
+
+import { AutoWire, Logger, MavenCliProxy, ProjectPickInfo, ProjectType } from "vrealize-common"
 import * as vscode from "vscode"
 
-import { Commands, MavenPom } from "../constants"
+import { Commands, Patterns } from "../constants"
 import { ConfigurationManager, EnvironmentManager } from "../manager"
 import { MultiStepInput, QuickPickParameters } from "../ui"
-
 import { Command } from "./Command"
 
 interface State extends ProjectPickInfo {
@@ -21,23 +21,39 @@ interface State extends ProjectPickInfo {
 
 const projectTypes: ProjectType[] = [
     {
-        id: "vro-js", label: "vRO JavaScript-based", containsWorkflows: false,
+        id: "vro-js",
+        label: "vRO JavaScript-based",
+        containsWorkflows: false,
         description: "A vRO project that contains only actions as JavaScript files."
     },
     {
-        id: "vro-xml", label: "vRO XML-based", containsWorkflows: true,
+        id: "vro-xml",
+        label: "vRO XML-based",
+        containsWorkflows: true,
         description: "A legacy vRO project that can contain any vRO content."
     },
     {
-        id: "vro-mixed", label: "vRO Mixed", containsWorkflows: true,
+        id: "vro-mixed",
+        label: "vRO Mixed",
+        containsWorkflows: true,
         description: "A mixed project that contains a JS-based module and a XML-based module."
     },
     {
-        id: "vra-yaml", label: "vRA YAML-based", containsWorkflows: false,
+        id: "vra-yaml",
+        label: "vRA 7.x",
+        containsWorkflows: false,
         description: "A vRA project that contains content exported from a vRA instance."
     },
     {
-        id: "vra-vro", label: "vRA and vRO", containsWorkflows: true,
+        id: "vra-ng",
+        label: "vRA 8.x",
+        containsWorkflows: false,
+        description: "A vRA project that contains content exported from a vRA instance."
+    },
+    {
+        id: "vra-vro",
+        label: "vRA 7.x and vRO",
+        containsWorkflows: true,
         description: "A vRO Mixed project with an additional module for vRA content."
     }
 ]
@@ -48,8 +64,7 @@ export class NewProject extends Command {
     private readonly state = {} as State
     private readonly title = "Create New Project"
 
-    constructor(private environment: EnvironmentManager,
-                private config: ConfigurationManager) {
+    constructor(private environment: EnvironmentManager, private config: ConfigurationManager) {
         super()
     }
 
@@ -61,7 +76,9 @@ export class NewProject extends Command {
         const noTypeScriptProject = projectTypes.every(e => e.id !== "vro-ts")
         if (this.config.vrdev.experimental.typescript && noTypeScriptProject) {
             projectTypes.unshift({
-                id: "vro-ts", label: "vRO TypeScript-based", containsWorkflows: false,
+                id: "vro-ts",
+                label: "vRO TypeScript-based",
+                containsWorkflows: false,
                 description: "A vRO project that contains actions, workflows and configs as TypeScript files."
             })
         } else if (!this.config.vrdev.experimental.typescript && !noTypeScriptProject) {
@@ -105,16 +122,17 @@ export class NewProject extends Command {
             step: 3,
             totalSteps: 3 + (this.state.projectType.containsWorkflows ? 1 : 0),
             value: this.state.name || "",
-            prompt: "Choose a name for the project. If the name contains dashes, remember to " +
+            prompt:
+                "Choose a name for the project. If the name contains dashes, remember to " +
                 "remove the dash from any folders under src/ to avoid build and test errors.",
             validate: this.validateName
         })
         return (input: MultiStepInput) => {
             if (this.state.projectType.containsWorkflows) {
                 return this.inputWorkflowsPath(input)
-            } else {
-                return this.showSaveDialog(input)
             }
+
+            return this.showSaveDialog(input)
         }
     }
 
@@ -132,68 +150,73 @@ export class NewProject extends Command {
 
     private async showSaveDialog(input: MultiStepInput) {
         const uri = await vscode.window.showOpenDialog({
-            canSelectFolders: true, canSelectFiles: false, openLabel: "Create here"
+            canSelectFolders: true,
+            canSelectFiles: false,
+            openLabel: "Create here"
         })
 
         if (uri && uri.length > 0) {
-            this.state.destination = uri[0].toString()
+            this.state.destination = uri[0]
             this.generateProject()
         }
     }
 
     private generateProject() {
-        vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: `Generating ${this.state.projectType.label} project`,
-            cancellable: true
-        }, (progress, token) => {
-            let canceled = false
-            token.onCancellationRequested(() => {
-                this.logger.info("User canceled the 'New Project' operation")
-                canceled = true
-            })
+        vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: `Generating ${this.state.projectType.label} project`,
+                cancellable: true
+            },
+            (progress, token) => {
+                let canceled = false
+                token.onCancellationRequested(() => {
+                    this.logger.info("User canceled the 'New Project' operation")
+                    canceled = true
+                })
 
-            return new Promise(async (resolve, reject) => {
-                if (!this.state.destination) {
-                    reject("Destination folder was not selected")
-                    return
-                }
+                return new Promise(async (resolve, reject) => {
+                    if (!this.state.destination) {
+                        reject("Destination folder was not selected")
+                        return
+                    }
 
-                if (!canceled) {
-                    const maven = new MavenCliProxy(this.environment, this.config.vrdev.maven, this.logger)
-                    await maven
-                        .createProject(
-                            this.state.projectType.id,
-                            this.state.groupId,
-                            this.state.name,
-                            uri.urlToPath(this.state.destination),
-                            this.state.projectType.containsWorkflows,
-                            this.state.workflowsPath
+                    if (!canceled) {
+                        const maven = new MavenCliProxy(this.environment, this.config.vrdev.maven, this.logger)
+                        await maven
+                            .createProject(
+                                this.state.projectType.id,
+                                this.state.groupId,
+                                this.state.name,
+                                this.state.destination.fsPath,
+                                this.state.projectType.containsWorkflows,
+                                this.state.workflowsPath
+                            )
+                            .catch(reason => {
+                                this.logger.error("An error occurred while generating the project.", reason)
+                                reject(reason.message)
+                                canceled = true
+                            })
+                    }
+
+                    if (!canceled) {
+                        const projectFolder = path.join(this.state.destination.fsPath, this.state.name)
+                        vscode.commands.executeCommand(
+                            "vscode.openFolder",
+                            vscode.Uri.file(projectFolder),
+                            vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
                         )
-                        .catch(reason => {
-                            this.logger.error("An error occurred while generating the project.", reason)
-                            reject(reason.message)
-                            canceled = true
-                        })
-                }
-
-                if (!canceled) {
-                    const projectFolder = path.join(this.state.destination, this.state.name)
-                    vscode.commands.executeCommand(
-                        "vscode.openFolder",
-                        vscode.Uri.parse(projectFolder),
-                        vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
-                    )
-                }
-                resolve()
-            }).catch(reason => {
-                vscode.window.showErrorMessage("Could not create a new project. \n\n" + reason)
-            })
-        })
+                    }
+                    resolve()
+                }).catch(reason => {
+                    vscode.window.showErrorMessage(`Could not create a new project. \n\n${reason}`)
+                })
+            }
+        )
     }
 
     private async validateName(value: string) {
-        if (!MavenPom.ArtifactIdPattern.test(value)) {
+        if (!Patterns.PomArtifactId.test(value)) {
             return "The project name should contain only letters, numbers, dashes and underscores"
         }
 
@@ -201,7 +224,7 @@ export class NewProject extends Command {
     }
 
     private async validateGroupId(value: string) {
-        if (!MavenPom.GroupIdPattern.test(value)) {
+        if (!Patterns.PomGroupId.test(value)) {
             return "The project group ID should contain only letters, numbers, dots, dashes and underscores"
         }
 

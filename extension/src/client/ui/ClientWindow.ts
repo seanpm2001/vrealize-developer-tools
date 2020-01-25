@@ -11,30 +11,35 @@ import { ConfigurationManager } from "../manager"
 
 export class ClientWindow implements vscode.Disposable {
     private readonly logger = Logger.get("ClientWindow")
-
     private readonly collectionButton: vscode.StatusBarItem
     private readonly collectionStatus: vscode.StatusBarItem
-    public profileName: string | undefined
 
-    constructor(initialProfileName: string | undefined) {
+    profileName: string | undefined
+
+    constructor(initialProfileName: string | undefined, context: vscode.ExtensionContext) {
         this.logger.debug("Instantiating the client window")
+
+        context.subscriptions.push(
+            vscode.commands.registerCommand(Commands.EventCollectionStart, this.onCollectionStart.bind(this)),
+            vscode.commands.registerCommand(Commands.EventCollectionSuccess, this.onCollectionSuccess.bind(this)),
+            vscode.commands.registerCommand(Commands.EventCollectionError, this.onCollectionError.bind(this))
+        )
 
         this.collectionStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10101)
         this.collectionButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10100)
 
-        this.collectionStatus.text = "$(plug) Initializing..."
+        this.collectionStatus.text = "$(plug) $(kebab-horizontal)"
         this.profileName = initialProfileName
 
         this.collectionStatus.show()
-        this.collectionButton.show()
     }
 
-    public dispose() {
+    dispose() {
         this.collectionButton.dispose()
         this.collectionStatus.dispose()
     }
 
-    public verifyConfiguration(config: ConfigurationManager): boolean {
+    verifyConfiguration(config: ConfigurationManager): boolean {
         this.profileName = config.hasActiveProfile() ? config.activeProfile.get("id") : undefined
         this.logger.info(`Verifying configuration for active profile ${this.profileName}`)
 
@@ -51,39 +56,37 @@ export class ClientWindow implements vscode.Disposable {
             this.collectionStatus.text = `$(server) ${this.profileName} (${hostname})`
             this.collectionStatus.tooltip = "Change active profile"
             this.collectionStatus.command = Commands.ChangeProfile
-            this.collectionStatus.color = undefined
 
             return true
-        } else {
-            const warnMessage = "A vRO maven profile is missing or incomplete."
-            this.logger.warn(warnMessage)
-
-            this.collectionButton.hide()
-
-            this.collectionStatus.text = "$(server) (no profile)"
-            this.collectionStatus.tooltip = warnMessage
-            this.collectionStatus.command = Commands.ChangeProfile
-            this.collectionStatus.color = new vscode.ThemeColor("errorForeground")
-
-            return false
         }
+
+        const warnMessage = "A vRO maven profile is missing or incomplete."
+        this.logger.warn(warnMessage)
+
+        this.collectionButton.hide()
+
+        this.collectionStatus.text = "$(server) $(x)"
+        this.collectionStatus.tooltip = warnMessage
+        this.collectionStatus.command = Commands.ChangeProfile
+
+        return false
     }
 
-    public onCollectionStart() {
+    private onCollectionStart() {
         this.collectionButton.text = "$(watch) "
         this.collectionButton.command = undefined
         this.collectionButton.tooltip = undefined
         this.collectionButton.color = undefined
     }
 
-    public onCollectionSuccess() {
+    private onCollectionSuccess() {
         this.collectionButton.text = "$(cloud-download)"
         this.collectionButton.command = Commands.TriggerServerCollection
         this.collectionButton.tooltip = "Trigger vRO hint collection"
         this.collectionButton.color = undefined
     }
 
-    public onCollectionError(message: string) {
+    private onCollectionError(message: string) {
         this.collectionButton.text = "$(alert)"
         this.collectionButton.command = Commands.TriggerServerCollection
         this.collectionButton.tooltip = `Collection failed: ${message}`
@@ -92,12 +95,10 @@ export class ClientWindow implements vscode.Disposable {
         const errorMessage = `Hint collection failed - ${message}`
         this.logger.error(errorMessage)
 
-        vscode.window.showErrorMessage(errorMessage, "Retry").then(
-            selected => {
-                if (selected === "Retry") {
-                    vscode.commands.executeCommand(Commands.TriggerServerCollection)
-                }
+        vscode.window.showErrorMessage(errorMessage, "Retry").then(selected => {
+            if (selected === "Retry") {
+                vscode.commands.executeCommand(Commands.TriggerServerCollection, this)
             }
-        )
+        })
     }
 }

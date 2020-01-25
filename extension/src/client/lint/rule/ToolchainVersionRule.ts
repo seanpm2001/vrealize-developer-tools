@@ -8,7 +8,7 @@ import * as semver from "semver"
 import { Logger, PomFile } from "vrealize-common"
 import * as vscode from "vscode"
 
-import { MavenPom } from "../../constants"
+import { Patterns } from "../../constants"
 import { PomLintRule } from "../PomLintRule"
 
 export class ToolchainVersionRule extends PomLintRule {
@@ -30,9 +30,11 @@ export class ToolchainVersionRule extends PomLintRule {
             return []
         }
 
-        if (semver.gte(version, this.lintContext.environment.version)) {
-            this.logger.info(`Project parent version (${version}) is higher or ` +
-                `equal to the vscode extension's version (${this.lintContext.environment.version})`)
+        if (semver.gte(version, this.lintContext.environment.buildToolsVersion)) {
+            this.logger.info(
+                `Project parent version (${version}) is higher or ` +
+                    `equal to vRealize Build Tools's version (${this.lintContext.environment.buildToolsVersion})`
+            )
             return []
         }
 
@@ -42,8 +44,9 @@ export class ToolchainVersionRule extends PomLintRule {
             return []
         }
 
-        const message = `Outdated toolchain version: Parent version (${version}) is lower than ` +
-            `the vRO extension version (${this.lintContext.environment.version})`
+        const message =
+            `Outdated version: Parent version (${version}) is lower than ` +
+            `the vRealize Build Tools version (${this.lintContext.environment.buildToolsVersion})`
         const diagnostic = new vscode.Diagnostic(range, message, vscode.DiagnosticSeverity.Warning)
         diagnostic.code = "toolchain-version"
         diagnostic.source = this.lintContext.environment.displayName
@@ -52,7 +55,7 @@ export class ToolchainVersionRule extends PomLintRule {
     }
 
     fix(text: string): string {
-        return this.lintContext.environment.version
+        return this.lintContext.environment.buildToolsVersion
     }
 
     private extractParentVersion(pomXmlContent: string): string | null {
@@ -80,12 +83,14 @@ export class ToolchainVersionRule extends PomLintRule {
         return version
     }
 
-    private calculateVersionRange(pomXmlContent: string,
-                                  pomParentVersion: string,
-                                  document: vscode.TextDocument): vscode.Range | null {
+    private calculateVersionRange(
+        pomXmlContent: string,
+        pomParentVersion: string,
+        document: vscode.TextDocument
+    ): vscode.Range | null {
         let versionAbsolutePosition = 0
 
-        const parentTagSearchResults = MavenPom.ParentPattern.exec(pomXmlContent)
+        const parentTagSearchResults = Patterns.PomParent.exec(pomXmlContent)
         if (!parentTagSearchResults) {
             this.logger.error("Could not find parent tag contents")
             return null

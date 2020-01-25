@@ -16,7 +16,6 @@ Put an `x` in the boxes that apply. You can also fill these out after creating t
 This is simply a reminder of what we are going to look for before merging your code.
 -->
 
-- [ ] I have read the guidelines in the [CONTRIBUTING](CONTRIBUTING.md) document
 - [ ] Lint and unit tests pass locally with my changes
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] I have added necessary documentation (if appropriate)
@@ -36,7 +35,7 @@ Please describe the changes in a single line that explains this improvement in
 terms that a user can understand. This text will be used in vRealize Developer Tools' release notes.
 
 If this change is not user-facing or notable enough to be included in release notes
-you may use the strings "Not applicable" or "N/A" here.
+you should delete this section (or leave it empty).
 
 Examples:
 
@@ -49,3 +48,7 @@ Examples:
 ### Screenshot
 
 <!-- Include an image of the most relevant user-facing change, if any. -->
+
+### Related issues and PRs
+
+<!-- Link any related issues and pull requests here using #number or user/repo#number -->

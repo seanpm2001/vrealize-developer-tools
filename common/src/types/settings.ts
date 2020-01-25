@@ -15,7 +15,7 @@ export interface MavenInfo {
 }
 
 export interface TasksInfo {
-    disable: boolean,
+    disable: boolean
     exclude: string[]
 }
 
@@ -23,11 +23,29 @@ export interface ExperimentalFlags {
     typescript: boolean
 }
 
+export interface BuildTools {
+    defaultVersion: string
+}
+
+export interface Views {
+    explorer: ExplorerView
+}
+
+export interface ExplorerView {
+    actions: ActionsView
+}
+
+export interface ActionsView {
+    layout: "tree" | "compact" | "flat"
+}
+
 export interface VrealizeSettings {
     log: LogLevel
     trace: TraceLevel
     commandPalette: CommandPaletteInfo
     tasks: TasksInfo
-    maven: MavenInfo,
+    maven: MavenInfo
     experimental: ExperimentalFlags
+    buildTools: BuildTools,
+    views: Views
 }

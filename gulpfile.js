@@ -1,177 +1,185 @@
 /* Copyright 2018-2019 VMware, Inc.
  * SPDX-License-Identifier: MIT */
 
-const gulp = require("gulp");
-const path = require("path");
-const cp = require("child_process");
-const fs = require("fs-extra");
-const minimist = require("minimist");
-const chmod = require("gulp-chmod");
-const log = require("fancy-log");
+const gulp = require("gulp")
+const gulpIf = require("gulp-if")
+const path = require("path")
+const cp = require("child_process")
+const fs = require("fs-extra")
+const minimist = require("minimist")
+const log = require("fancy-log")
+const eslint = require("gulp-eslint")
+const release = require("./build/release")
+const bumpVersion = require("./build/bump-version")
 
-const rootPath = __dirname;
-const nodeModulesPathPrefix = path.resolve("./node_modules");
-const isWin = /^win/.test(process.platform);
-const mocha = path.join(nodeModulesPathPrefix, ".bin", "mocha") + (isWin ? ".cmd" : "");
-const pbjs = path.join(nodeModulesPathPrefix, "protobufjs", "bin", "pbjs");
-const pbts = path.join(nodeModulesPathPrefix, "protobufjs", "bin", "pbts");
-const vsce = path.join(nodeModulesPathPrefix, ".bin", "vsce");
-const tsc = path.join(nodeModulesPathPrefix, ".bin", "tsc");
-const tslint = path.join(nodeModulesPathPrefix, ".bin", "tslint");
-const vsctest = path.join(nodeModulesPathPrefix, "vscode", "bin", "test");
+const rootPath = __dirname
+const nodeModulesPathPrefix = path.resolve("./node_modules")
+const isWin = /^win/.test(process.platform)
+const jest = path.join(nodeModulesPathPrefix, ".bin", "jest") + (isWin ? ".cmd" : "")
+const pbjs = path.join(nodeModulesPathPrefix, "protobufjs", "bin", "pbjs")
+const pbts = path.join(nodeModulesPathPrefix, "protobufjs", "bin", "pbts")
+const vsce = path.join(nodeModulesPathPrefix, ".bin", "vsce")
+const tsc = path.join(nodeModulesPathPrefix, ".bin", "tsc")
 
 const cmdLineOptions = minimist(process.argv.slice(2), {
-    boolean: ["debug", "inspect"],
+    boolean: ["debug", "inspect", "fix"],
     string: ["tests", "timeout", "value"],
     alias: {
-        "d": "debug",
-        "i": "inspect",
-        "t": "tests", "test": "tests"
+        d: "debug",
+        i: "inspect",
+        t: "tests",
+        test: "tests"
     },
     default: {
         debug: process.env.debug || process.env.d,
         timeout: process.env.timeout || 40000,
         tests: process.env.test || process.env.tests || process.env.t
     }
-});
+})
 
-gulp.task("chmod-vsc-test", () => {
-    return gulp.src(vsctest)
-        .pipe(chmod(0o755))
-        .pipe(gulp.dest(path.dirname(vsctest)));
-});
+gulp.task("generate-proto", done => {
+    const root = path.join(rootPath, "language-server")
+    const protoPath = path.resolve(root, "src", "proto")
 
-gulp.task("generate-proto", (done) => {
-    const root = path.join(rootPath, "language-server");
-    const protoPath = path.resolve(root, "src", "proto");
-
-    fs.emptyDirSync(path.resolve(protoPath));
+    fs.emptyDirSync(path.resolve(protoPath))
 
     const pbjsArgs = [
-        "-t", "static-module", "-w", "commonjs",
-        "-o", path.resolve(protoPath, "index.js"),
+        "-t",
+        "static-module",
+        "-w",
+        "commonjs",
+        "-o",
+        path.resolve(protoPath, "index.js"),
         path.join(root, "..", "protocol", "src", "**", "*.proto")
-    ];
+    ]
 
-    const pbtsArgs = [
-        "-o", path.resolve(protoPath, "index.d.ts"),
-        path.resolve(protoPath, "index.js")
-    ];
+    const pbtsArgs = ["-o", path.resolve(protoPath, "index.d.ts"), path.resolve(protoPath, "index.js")]
 
-    exec(pbjs, pbjsArgs);
-    exec(pbts, pbtsArgs);
-    done();
-});
+    exec(pbjs, pbjsArgs)
+    exec(pbts, pbtsArgs)
+    done()
+})
 
 gulp.task("copy-proto", () => {
-    const root = path.join(rootPath, "language-server");
-    const protoSrcPath = path.resolve(root, "src", "proto");
-    const protoOutPath = path.resolve(root, "out", "proto");
+    const root = path.join(rootPath, "language-server")
+    const protoSrcPath = path.resolve(root, "src", "proto")
+    const protoOutPath = path.resolve(root, "out", "proto")
 
-    fs.ensureDirSync(protoOutPath);
+    fs.ensureDirSync(protoOutPath)
 
-    return gulp
-        .src("index.*", { cwd: protoSrcPath, base: protoSrcPath })
-        .pipe(gulp.dest(protoOutPath));
-});
+    return gulp.src("index.*", { cwd: protoSrcPath, base: protoSrcPath }).pipe(gulp.dest(protoOutPath))
+})
 
 gulp.task("copy-changelog", () => {
-    const root = path.join(rootPath, "..");
-    const changelogPath = path.resolve(root);
-    const changelogOutPath = path.resolve(root, "vscode", "extension");
+    const root = path.join(rootPath, "..")
+    const changelogPath = path.resolve(root)
+    const changelogOutPath = path.resolve(root, "vscode", "extension")
 
     return gulp
         .src("CHANGELOG.md", {
             cwd: changelogPath,
             base: changelogPath
         })
-        .pipe(gulp.dest(changelogOutPath));
-});
+        .pipe(gulp.dest(changelogOutPath))
+})
 
-const projects = ["common", "language-server", "extension"];
+const projects = ["common", "language-server", "extension"]
 
-gulp.task("clean", (done) => {
+gulp.task("clean", done => {
     projects.forEach(name => {
-        var outPath = path.join(rootPath, name, "out");
-        fs.removeSync(outPath);
-    });
+        var outPath = path.join(rootPath, name, "out")
+        fs.removeSync(outPath)
 
-    done();
-});
+        var tsBuildInfo = path.join(rootPath, name, "tsconfig.tsbuildinfo")
+        fs.removeSync(tsBuildInfo)
+    })
 
-gulp.task("compile", ["clean", "generate-proto", "copy-proto"], (done) => {
-    // TODO: Evaluate using gulp-typescript and gulp-sourcemaps
-    // once they fully support project references
-    exec(tsc, ["-b"], rootPath);
-    done();
-});
+    done()
+})
 
-gulp.task("watch", (done) => {
-    exec(tsc, ["-b", "-w"], rootPath);
-    done();
-});
+gulp.task(
+    "compile",
+    gulp.series("generate-proto", "copy-proto", done => {
+        // TODO: Evaluate using gulp-typescript and gulp-sourcemaps
+        // once they fully support project references
+        exec(tsc, ["-b"], rootPath)
+        done()
+    })
+)
 
-gulp.task("lint", (done) => {
-    const tsconfigFile = path.resolve(rootPath, "tsconfig.lint.json");
-    exec(tslint, ["-p", tsconfigFile, "-t", "verbose", "--fix"], rootPath);
-    done();
-});
+gulp.task("watch", done => {
+    exec(tsc, ["-b", "-w"], rootPath)
+    done()
+})
 
-gulp.task("test", ["compile", "chmod-vsc-test"], (done) => {
-    // run common tests
-    var commonRoot = path.join(rootPath, "common");
-    var commonTests = path.join(commonRoot, "src", "test", "**", "*.ts");
-    testWithMocha(commonRoot, commonTests);
+gulp.task("lint", () => {
+    return gulp
+        .src(["**/src/**/*.ts", "!node_modules/**"], { cwd: rootPath })
+        .pipe(eslint({ fix: !!cmdLineOptions.fix }))
+        .pipe(eslint.format())
+        .pipe(gulpIf(file => file.eslint && file.eslint.fixed, gulp.dest("./")))
+        .pipe(eslint.failAfterError())
+})
 
-    // run language server tests
-    var lsRoot = path.join(rootPath, "language-server");
-    var lsTests = path.join(lsRoot, "src", "test", "**", "*.ts");
-    testWithMocha(rootPath, lsTests);
+gulp.task(
+    "test",
+    gulp.series("compile", done => {
+        const projectRoots = projects.map(name => path.join(rootPath, name))
+        const args = ["--verbose", "--projects", ...projectRoots]
 
-    // run extension tests
-    process.env["CODE_TESTS_PATH"] = path.join(rootPath, "extension", "out", "test");
-    cp.execSync("node " + vsctest, {
-        cwd: rootPath,
-        stdio: "inherit",
-        env: process.env
-    });
+        if (cmdLineOptions.tests) {
+            args.push("-t", `"${cmdLineOptions.tests}"`)
+        }
 
-    done();
-});
+        exec(jest, args, rootPath)
+        done()
+    })
+)
 
-gulp.task("package", ["lint", "test", "copy-changelog"], (done) => {
-    exec(vsce, ["package", "--yarn", "--baseContentUrl", "."], rootPath);
-    done();
-});
+gulp.task("test:watch", done => {
+    const projectRoots = projects.map(name => path.join(rootPath, name))
+    const args = ["--verbose", "--watch", "--projects", ...projectRoots]
 
-gulp.task("default", ["watch"]);
+    exec(jest, args, rootPath)
+    done()
+})
 
-function testWithMocha(root, testSrc) {
-    const args = [
-        "--colors", "-u", "bdd",
-        "-r", "ts-node/register",
-        "-r", "tsconfig-paths/register",
-        "-r", "module-alias/register"
-    ];
+gulp.task(
+    "package",
+    gulp.series("lint", "test", done => {
+        exec(
+            vsce,
+            [
+                "package",
+                "--yarn",
+                "--baseContentUrl",
+                "https://raw.githubusercontent.com/vmware/vrealize-developer-tools/master/",
+                "--baseImagesUrl",
+                "https://raw.githubusercontent.com/vmware/vrealize-developer-tools/master/"
+            ],
+            rootPath
+        )
+        done()
+    })
+)
 
-    if (cmdLineOptions.tests) {
-        args.push("-g", `"${cmdLineOptions.tests}"`);
-    }
+gulp.task("release", () => {
+    return release()
+})
 
-    if (cmdLineOptions.inspect) {
-        args.unshift("--inspect-brk");
-    } else if (cmdLineOptions.debug) {
-        args.unshift("--debug-brk");
-    } else {
-        args.push("-t", cmdLineOptions.timeout || 40000);
-    }
+gulp.task("bump-version", () => {
+    return bumpVersion()
+})
 
-    args.push(path.resolve(testSrc));
-
-    exec(mocha, args, root);
-}
+gulp.task("default", gulp.series("watch"))
 
 function exec(cmd, args, cwd, stdio = "inherit") {
-    console.log(`${cmd} ${args.join(" ")}`);
-    return cp.spawnSync(cmd, args, { stdio, cwd });
+    var cmdString = `${cmd} ${args.join(" ")}`
+    log(cmdString)
+    var result = cp.spawnSync(cmd, args, { stdio, cwd })
+    if (result.status != 0) {
+        throw new Error(`Command "${cmdString}" exited with code ` + result.status)
+    }
+
+    return result
 }
