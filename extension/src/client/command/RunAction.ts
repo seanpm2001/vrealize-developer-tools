@@ -47,7 +47,6 @@ export class RunAction extends Command {
         super()
         this.vrotsc = new VrotscCliProxy(this.logger)
         this.outputChannel = vscode.window.createOutputChannel(OutputChannels.RunActionLogs)
-        this.outputChannel.appendLine("#vro-action-log") // first line is used to provide highlighting
     }
 
     register(context: vscode.ExtensionContext, clientWindow: ClientWindow): void {

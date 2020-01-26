@@ -8,115 +8,146 @@
         <string>Log file</string>
         <key>patterns</key>
         <array>
+
+            <!-- Quoted strings with " -->
             <dict>
-                <!-- Quoted strings with " -->
                 <key>match</key>
                 <string>"(.*?)"</string>
                 <key>name</key>
-                <string>string.quoted</string>
+                <string>string.quoted vrdev.log.string</string>
             </dict>
+
+            <!-- Quoted strings with ' -->
             <dict>
-                <!-- Quoted strings with ' -->
                 <key>match</key>
                 <string>'(.*?)'</string>
                 <key>name</key>
-                <string>string.quoted</string>
+                <string>string.quoted vrdev.log.string</string>
             </dict>
+
+            <!-- GUID -->
             <dict>
-                <!-- GUID -->
                 <key>match</key>
                 <string>\b(?i:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))\b</string>
                 <key>name</key>
-                <string>support.class</string>
+                <string>support.class vrdev.log.guid</string>
             </dict>
+
+            <!-- Exception type names -->
             <dict>
-                <!-- Exception (with custom naming and namespacing) -->
                 <key>match</key>
-                <string>\b(?i:((\.)*[a-z]|[0-9])*(Exception|Error|Failure|Fail))\b</string>
+                <string>\b([a-zA-Z.]*(Exception|Error))\b</string>
+
                 <key>name</key>
-                <string>invalid</string>
+                <string>string.regexp vrdev.log.exception</string>
             </dict>
+
+            <!-- Colorize rows of exception call stacks -->
             <dict>
-                <!-- Date MM/DD/(YY)YY -->
+                <key>begin</key>
+                <string>^[\t ]*at</string>
+
+                <key>end</key>
+                <string>$</string>
+
+                <key>name</key>
+                <string>string.key, emphasis vrdev.log.callStack</string>
+            </dict>
+
+            <!-- ISO dates ("2016-08-23") -->
+            <dict>
                 <key>match</key>
-                <string>\b(((0|1)?[0-9][1-2]?)|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sept(ember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?))[/|\-|\.| ]([0-2]?[0-9]|[3][0-1])[/|\-|\.| ]((19|20)?[0-9]{2})\b</string>
+                <string>\b\d{4}-\d{2}-\d{2}(T|\b)</string>
+
                 <key>name</key>
-                <string>constant.numeric</string>
+                <string>constant.numeric vrdev.log.date</string>
             </dict>
+
+            <!-- Culture specific dates ("23/08/2016", "23.08.2016") -->
             <dict>
-                <!-- Date (YY)YY/DD/MM -->
                 <key>match</key>
-                <string>\b((19|20)?[0-9]{2}[/|\-|\.| ](((0|1)?[0-9][1-2]?)|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sept(ember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?))[/|\-|\.| ]([0-2]?[0-9]|[3][0-1]))\b</string>
+                <string>\b\d{2}[^\w\s]\d{2}[^\w\s]\d{4}\b</string>
+
                 <key>name</key>
-                <string>constant.numeric</string>
+                <string>constant.numeric vrdev.log.date</string>
             </dict>
+
+            <!-- Clock times with optional timezone ("09:13:16", "09:13:16.323", "09:13:16+01:00") -->
             <dict>
-                <!-- Date DD/MM/(YY)YY -->
                 <key>match</key>
-                <string>\b([0-2]?[0-9]|[3][0-1])[/|\-|\.| ](((0|1)?[0-9][1-2]?)|(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sept(ember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?))[/|\-|\.| ]((19|20)?[0-9]{2})\b</string>
+                <string>\d{1,2}:\d{2}(:\d{2}([.,]\d{1,})?)?(Z| ?[+-]\d{1,2}:\d{2})?\b</string>
+
                 <key>name</key>
-                <string>constant.numeric</string>
+                <string>constant.numeric vrdev.log.date</string>
             </dict>
+
+            <!-- Numeric (decimal) -->
             <dict>
-                <!-- Time HH:MM(:SS)? AM? timezone? -->
-                <key>match</key>
-                <string>\b([0|1]?[0-9]|2[0-3])\:[0-5][0-9](\:[0-5][0-9])?( ?(?i:(a|p)m?))?( ?[+-]?[0-9]*)?\b</string>
-                <key>name</key>
-                <string>constant.numeric</string>
-            </dict>
-            <dict>
-                <!-- Numeric (decimal) -->
                 <key>match</key>
                 <string>\b\d+\.?\d*?\b</string>
                 <key>name</key>
-                <string>constant.numeric</string>
+                <string>constant.numeric vrdev.log.numeric</string>
             </dict>
+
+            <!-- Numeric (hex) -->
             <dict>
-                <!-- Numeric (hex) -->
                 <key>match</key>
                 <string>\b(?i:(0?x)?[0-9a-f][0-9a-f]+)\b</string>
                 <key>name</key>
-                <string>constant.numeric</string>
+                <string>constant.numeric vrdev.log.numeric</string>
             </dict>
+
+            <!-- Namespace -->
             <dict>
-                <!-- Namespace -->
                 <key>match</key>
                 <string>\b(?i:(([a-z]|[0-9]|[_|-])*(\.([a-z]|[0-9]|[_|-])*)+))\b</string>
                 <key>name</key>
-                <string>support.type</string>
+                <string>support.type vrdev.log.namespace</string>
             </dict>
+
             <dict>
                 <key>match</key>
-                <string>\b(?i:(Down|Error|Failure|Fail|Fatal|false))(\:|\b)</string>
+                <string>\b(?i:(error|failure|fail|fatal))(\:|\b)</string>
                 <key>name</key>
-                <string>invalid.illegal</string>
+                <string>storage.type vrdev.log.error</string>
             </dict>
+
             <dict>
                 <key>match</key>
-                <string>\b(?i:(hint|info|information|true|log))(\:|\b)</string>
+                <string>\b(?i:(info|information|true|false|log))(\:|\b)</string>
                 <key>name</key>
-                <string>keyword</string>
+                <string>markup.inserted vrdev.log.info</string>
             </dict>
+
             <dict>
                 <key>match</key>
-                <string>\b(?i:(warning|warn|test|debug|null|undefined|NaN))(\:|\b)</string>
+                <string>\b(?i:(warning|warn|test|null|undefined|NaN))(\:|\b)</string>
                 <key>name</key>
-                <string>invalid.deprecated</string>
+                <string>markup.deleted vrdev.log.warning</string>
             </dict>
+
             <dict>
-                <!-- Generic URI/URL -->
+                <key>match</key>
+                <string>\b(?i:(debug|fine|finest))(\:|\b)</string>
+                <key>name</key>
+                <string>comment.line vrdev.log.debug</string>
+            </dict>
+
+            <!-- Generic URI/URL -->
+            <dict>
                 <key>match</key>
                 <string>\b(?i:([a-z]|[0-9])+\:((\/\/)|((\/\/)?(\S)))+)</string>
                 <key>name</key>
-                <string>storage</string>
+                <string>storage vrdev.log.url</string>
             </dict>
+
             <dict>
                 <key>begin</key>
                 <string>^#</string>
                 <key>end</key>
                 <string>$\n?</string>
                 <key>name</key>
-                <string>comment.line</string>
+                <string>comment.line vrdev.log.comment</string>
             </dict>
         </array>
         <key>uuid</key>

@@ -441,7 +441,6 @@
         "aliases": [
           "vRO Action Log"
         ],
-        "firstLine": "^#vro-action-log",
         "mimetypes": [
           "text/x-code-output",
           "x-code-output"
