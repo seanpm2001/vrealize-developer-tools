@@ -43,7 +43,14 @@
     "onCommand:vrdev.blueprint.create",
     "onCommand:vrdev.blueprint.fetch",
     "onCommand:vrdev.blueprint.upload",
-    "onCommand:vrdev.blueprint.deploy"
+    "onCommand:vrdev.blueprint.deploy",
+    "onCommand:vrdev.polyglot.package",
+    "onCommand:vrdev.polyglot.push",
+    "onCommand:vrdev.polyglot.run",
+    "onCommand:vrdev.polyglot.debug",
+    "onCommand:vrdev.polyglot.package-push",
+    "onCommand:vrdev.polyglot.package-push-run",
+    "onCommand:vrdev.polyglot.package-push-debug"
   ],
   "main": "./extension/out/extension",
   "icon": "assets/logo.png",
@@ -234,6 +241,41 @@
           "dark": "assets/icons/dark/circuit-board.svg",
           "light": "assets/icons/light/circuit-board.svg"
         }
+      },
+      {
+        "command": "vrdev.polyglot.package",
+        "title": "Polyglot/ABX: Package",
+        "category": "vRealize"
+      },
+      {
+        "command": "vrdev.polyglot.push",
+        "title": "Polyglot/ABX: Push",
+        "category": "vRealize"
+      },
+      {
+        "command": "vrdev.polyglot.run",
+        "title": "Polyglot/ABX: Run",
+        "category": "vRealize"
+      },
+      {
+        "command": "vrdev.polyglot.debug",
+        "title": "Polyglot/ABX: Debug",
+        "category": "vRealize"
+      },
+      {
+        "command": "vrdev.polyglot.package-push",
+        "title": "Polyglot/ABX: Package - Push",
+        "category": "vRealize"
+      },
+      {
+        "command": "vrdev.polyglot.package-push-run",
+        "title": "Polyglot/ABX: Package - Push - Run",
+        "category": "vRealize"
+      },
+      {
+        "command": "vrdev.polyglot.package-push-debug",
+        "title": "Polyglot/ABX: Package - Push - Debug",
+        "category": "vRealize"
       }
     ],
     "menus": {

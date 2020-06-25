@@ -42,7 +42,15 @@ export enum Commands {
     CreateBlueprint = "vrdev.blueprint.create",
     UploadBlueprint = "vrdev.blueprint.upload",
     FetchBlueprint = "vrdev.blueprint.fetch",
-    DeployBlueprint = "vrdev.blueprint.deploy"
+    DeployBlueprint = "vrdev.blueprint.deploy",
+
+    PackagePolyglot = "vrdev.polyglot.package",
+    PushPolyglot = "vrdev.polyglot.push",
+    RunPolyglot = "vrdev.polyglot.run",
+    DebugPolyglot = "vrdev.polyglot.debug",
+    PackagePushPolyglot = "vrdev.polyglot.package-push",
+    PackagePushRunPolyglot = "vrdev.polyglot.package-push-run",
+    PackagePushDebugPolyglot = "vrdev.polyglot.package-push-debug",
 }
 
 export enum FixCommands {
@@ -107,5 +115,7 @@ export enum ProjectArchetypes {
     Actions = "com.vmware.pscoe.o11n:actions-package",
     Xml = "com.vmware.pscoe.o11n:xml-package",
     Vra = "com.vmware.pscoe.vra:vra-package",
-    VraNg = "com.vmware.pscoe.vra-ng:vra-ng-package"
+    VraNg = "com.vmware.pscoe.vra-ng:vra-ng-package",
+    Polyglot = "com.vmware.pscoe.polyglot:polyglot-project",
+    Serverless = "com.vmware.pscoe.serverless:serverless-project",
 }
