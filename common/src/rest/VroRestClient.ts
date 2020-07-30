@@ -589,4 +589,20 @@ export class VroRestClient {
             json: false
         })
     }
+
+    async getActionSubcategories(): Promise<any> {
+        return this.send("GET", "catalog/System/Catalog/Actions/sub-categories");
+    }
+
+    async getCategoryById(categoryId: string): Promise<any> {
+        return this.send("GET", `categories/${categoryId}`);
+    }
+
+    async getActionById(actionId: string): Promise<any> {
+        return this.send("GET", `actions/${actionId}`);
+    }
+
+    async getActionContentsById(actionId: string): Promise<any> {
+        return this.send("GET", `catalog/System/Action/${actionId}`)
+    }
 }

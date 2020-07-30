@@ -15,13 +15,15 @@ describe("utility", () => {
         const mockedInfo = jest.fn()
         const mockedWarn = jest.fn()
         const mockedError = jest.fn()
+        const mockedRaw = jest.fn()
 
         const logger: Logger = Logger.get("TestLog")
         const logChannel: LogChannel = {
             debug: mockedDebug,
             info: mockedInfo,
             warn: mockedWarn,
-            error: mockedError
+            error: mockedError,
+            raw: mockedRaw
         }
 
         // setup initially

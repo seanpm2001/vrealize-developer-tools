@@ -18,6 +18,14 @@ export abstract class BaseConfiguration {
         }
     }
 
+    get polyglotOut(): string {
+        return this.vrdev.polyglot.out
+    }
+
+    get polyglotBundle(): string {
+        return this.vrdev.polyglot.bundle
+    }
+
     get activeProfile(): MavenProfileWrapper {
         return this.getActiveProfileImpl()
     }

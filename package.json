@@ -559,6 +559,18 @@
           ],
           "markdownDescription": "Specifies how the _Explorer_ view will display vRO action packages",
           "scope": "window"
+        },
+        "vrdev.polyglot.out": {
+          "type": "string",
+          "default": "out",
+          "scope": "application",
+          "description": "Directory that contains intermediate Polyglot/ABX bundle contents"
+        },
+        "vrdev.polyglot.bundle": {
+          "type": "string",
+          "default": "dist/bundle.zip",
+          "scope": "application",
+          "description": "Path to the generated Polyglot/ABX bundle archive"
         }
       }
     },
@@ -583,6 +595,7 @@
     "@types/fs-extra": "~5.0.4",
     "@types/glob": "7.1.1",
     "@types/jest": "^24.9.1",
+    "@types/js-yaml": "^3.12.5",
     "@types/keytar": "^4.4.2",
     "@types/lodash": "^4.14.149",
     "@types/micromatch": "^3.1.1",
@@ -615,11 +628,14 @@
     "vsce": "^1.69.0"
   },
   "dependencies": {
+    "@vmware-pscoe/polyglotpkg": "latest",
     "adm-zip": "^0.4.13",
     "chokidar": "~2.0.4",
     "fast-xml-parser": "3.12.20",
+    "form-data": "^3.0.0",
     "fs-extra": "~7.0.0",
     "glob": "^7.1.6",
+    "js-yaml": "^3.14.0",
     "jsonc-parser": "^2.1.0",
     "lodash": "^4.17.15",
     "micromatch": "^4.0.2",

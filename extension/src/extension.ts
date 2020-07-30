@@ -5,6 +5,8 @@
 
 require("module-alias/register")
 
+import { Writable } from "stream";
+
 import { LogChannel, Logger, LogLevel } from "vrealize-common"
 import * as vscode from "vscode"
 
@@ -67,6 +69,14 @@ function getLoggingChannel(): LogChannel {
 
         error(message: string) {
             outputChannel.appendLine(message)
-        }
+        },
+        raw(): Writable {
+            return new Writable({
+                write: (chunk, encoding, next) => {
+                    outputChannel.append(chunk.toString());
+                    next();
+                }
+            });
+        },
     }
 }

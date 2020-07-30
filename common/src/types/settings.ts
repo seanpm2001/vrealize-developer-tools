@@ -53,6 +53,11 @@ export interface ActionsView {
     layout: "tree" | "compact" | "flat"
 }
 
+export interface Polyglot {
+    out: string
+    bundle: string
+}
+
 export interface VrealizeSettings {
     log: LogLevel
     trace: TraceLevel
@@ -63,4 +68,5 @@ export interface VrealizeSettings {
     buildTools: BuildTools
     views: Views
     vra: VraInfo
+    polyglot: Polyglot
 }

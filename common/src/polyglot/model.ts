@@ -1,0 +1,17 @@
+/*!
+ * Copyright 2018-2020 VMware, Inc.
+ * SPDX-License-Identifier: MIT
+ */
+export enum AbxExecutionStates {
+    CREATED = 'CREATED',
+    DEPLOYING = 'DEPLOYING',
+    RUNNING = 'RUNNING',
+    FINISHING = 'FINISHING',
+    COMPLETED = 'COMPLETED',
+    DEPLOYMENT_FAILED = 'DEPLOYMENT_FAILED',
+    FAILED = 'FAILED',
+    CANCELLED = 'CANCELLED',
+    UNKNOWN = 'UNKNOWN',
+    DEPLOYED = 'DEPLOYED',
+    HANDLING_ERROR = 'HANDLING_ERROR',
+}

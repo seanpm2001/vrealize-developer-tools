@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+import * as querystring from 'querystring';
+
 import * as request from "request-promise-native"
 
 import { VraNgAuth } from "./auth"
@@ -217,6 +219,22 @@ export class VraNgRestClient {
     }): Promise<Deployment> {
         return this.send("POST", "/blueprint/api/blueprint-requests", { body })
     }
+
+    // -----------------------------------------------------------
+    // ABX related APIs ------------------------------------------
+    // -----------------------------------------------------------
+
+    async getActionByName(name: string, projectId): Promise<any> {
+        const serverActions = await this.send("GET", `/abx/api/resources/actions?${querystring.stringify({
+            $filter: `actionId/projectId eq '${projectId}'`
+        })}`);
+        const serverAction = serverActions.content.find((a: any) => a.name === name);
+        return serverAction || null;
+    }
+
+    // -----------------------------------------------------------
+    // Project related APIs --------------------------------------
+    // -----------------------------------------------------------
 
     async getProjects(): Promise<Project[]> {
         const projects: { content: Project[] } = await this.send("GET", "/iaas/api/projects")

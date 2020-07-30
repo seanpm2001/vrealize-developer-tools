@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+import { Writable } from "stream";
+
 import { LogLevel } from "./types/settings"
 
 export interface LogChannel {
@@ -10,6 +12,7 @@ export interface LogChannel {
     info(message: string): void
     warn(message: string): void
     error(message: string): void
+    raw(): Writable
 }
 
 export default class Logger {
@@ -68,7 +71,7 @@ export default class Logger {
         )
     }
 
-    private get channel(): LogChannel | undefined {
+    get channel(): LogChannel | undefined {
         return Logger.logLevel !== "off" && Logger.logChannel ? Logger.logChannel : undefined
     }
 
