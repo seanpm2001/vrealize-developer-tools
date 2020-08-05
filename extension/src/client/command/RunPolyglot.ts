@@ -47,7 +47,7 @@ export class RunPolyglot extends BaseVraCommand {
                 if (!this.vraRestClient) {
                     this.vraRestClient = await this.getRestClient();
                 }
-                const projectId = ''; // TODO: get project id
+                const projectId = this.config.activeProfile.get("vrang.project.id");
                 const abxIntegration = await AbxActionIntegration.build(projectId, workspaceFolder.uri.fsPath, this.vraRestClient);
                 await abxIntegration.run(this.outputChannel);
                 break;
