@@ -7,3 +7,5 @@ language-server/src/proto/**
 
 gulpfile.js
 jest.config.js
+
+tools

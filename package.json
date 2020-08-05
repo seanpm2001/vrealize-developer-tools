@@ -628,7 +628,7 @@
     "vsce": "^1.69.0"
   },
   "dependencies": {
-    "@vmware-pscoe/polyglotpkg": "latest",
+    "@vmware-pscoe/polyglotpkg": "./tools/polyglotpkg",
     "adm-zip": "^0.4.13",
     "chokidar": "~2.0.4",
     "fast-xml-parser": "3.12.20",

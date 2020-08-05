@@ -33,5 +33,6 @@
     "composite": true
   },
   "include": [],
+  "exclude": ["./tools"],
   "references": [{ "path": "./extension" }]
 }
