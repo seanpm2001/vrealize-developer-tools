@@ -656,6 +656,11 @@ export class VroRestClient {
             value: {
                 [key: string]: any,
             }
+        }[],
+        breakpoints?: {
+            breakpoint: {
+                lineNumber: number
+            }
         }[]
     }) {
         return this.send("POST", `actions/${actionId}/executions`, { body })
@@ -667,5 +672,9 @@ export class VroRestClient {
 
     async getPolyglotActionRunLogs(runId: string, level: string = 'debug') {
         return this.send("GET", `actions/${runId}/logs`, { qs: { conditions: [`severity=${level}`] } });
+    }
+
+    async getPolyglotDebugRunConfig(runId: string) {
+        return this.send("GET", `debugger/${runId}/configuration`);
     }
 }

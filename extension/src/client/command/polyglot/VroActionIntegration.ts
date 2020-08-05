@@ -2,6 +2,10 @@
  * Copyright 2018-2020 VMware, Inc.
  * SPDX-License-Identifier: MIT
  */
+import * as fs from 'fs';
+import * as path from 'path';
+
+import * as jsonParser from "jsonc-parser"
 import * as vscode from 'vscode';
 import { getExecutionInputs, Logger, poll, VroAction, VroRestClient } from 'vrealize-common';
 import { delay } from 'lodash';
@@ -11,6 +15,7 @@ export class VroActionIntegration {
     private readonly logger = Logger.get("VroActionIntegration");
 
     private constructor(
+        private readonly workspaceDir: string,
         private readonly vroAction: VroAction,
         private readonly serverVroAction: VroAction | null,
         private readonly restClient: VroRestClient,
@@ -23,7 +28,7 @@ export class VroActionIntegration {
     ): Promise<VroActionIntegration> {
         const vroAction = await VroAction.fromPackage(workspaceDir);
         const serverVroAction = await VroAction.fromRemoteState(restClient, vroAction);
-        return new VroActionIntegration(vroAction, serverVroAction, restClient, bundle);
+        return new VroActionIntegration(workspaceDir, vroAction, serverVroAction, restClient, bundle);
     }
 
     /**
@@ -92,6 +97,45 @@ export class VroActionIntegration {
                 return output;
             }
         );
+    }
+
+    async debug() {
+
+        // short circuit debug
+        if (!this.serverVroAction) {
+            throw new Error(`Server VRO action not found`);
+        }
+
+        await vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: `Debugging ${this.serverVroAction.module}/${this.serverVroAction.name}`,
+                cancellable: false
+            },
+            async () => {
+
+                const remoteAction = this.serverVroAction as VroAction;
+
+                const defs = await remoteAction.getRunDefinition();
+                const parameters = getExecutionInputs(defs);
+
+                const result = await this.restClient.runPolyglotAction(remoteAction.remoteActionId as string, {
+                    parameters,
+                    breakpoints: [{ breakpoint: { lineNumber: 0 } }],
+                    'async-execution': true
+                })
+                const executionId = result['execution-id'];
+
+                // update launch config
+                const debugInformation = await this.restClient.getPolyglotDebugRunConfig(executionId);
+                this.updateLocalRoot(debugInformation);
+                await this.updateLaunchConfig(debugInformation);
+
+                vscode.commands.executeCommand('workbench.action.debug.start');
+
+            }
+        );
+
     }
 
     /**
@@ -187,6 +231,80 @@ export class VroActionIntegration {
                 resolve();
             }, 1000);
         });
+    }
+
+    /**
+     * Dynamically create launch configuration based on the
+     * execution run.
+     * @param debugInformation
+     */
+    async updateLaunchConfig(debugInformation: any) {
+
+        this.logger.debug(JSON.stringify(debugInformation, null, 2));
+
+        const NAME = 'vRO debug';
+        const vsCodeFolder = path.join(this.workspaceDir, '.vscode');
+
+        if (!fs.existsSync(vsCodeFolder)) {
+            fs.mkdirSync(vsCodeFolder);
+            vscode.workspace.fs.createDirectory(vscode.Uri.parse('.vscode'));
+        }
+
+        const launchJson = path.join(vsCodeFolder, 'launch.json');
+        let launchConfig;
+
+        if (fs.existsSync(launchJson)) {
+            // read existing launch config
+            launchConfig = jsonParser.parse(fs.readFileSync(launchJson, 'utf8'));
+            if (launchConfig.hasOwnProperty('configurations')) {
+                const targetConfiguration = launchConfig.configurations.find((c: any) => c.name === NAME);
+                if (targetConfiguration) {
+                    targetConfiguration.address = debugInformation.address;
+                    targetConfiguration.port = debugInformation.port;
+                    targetConfiguration.remoteRoot = debugInformation.remoteRoot;
+                } else {
+                    launchConfig.configurations.push({
+                        ...debugInformation,
+                        name: NAME,
+                        ...(debugInformation.type === 'node' && {
+                            sourceMaps: true,
+                            stopOnEntry: true,
+                            outFiles: ["${workspaceFolder}/out/**/*.js"] // eslint-disable-line
+                        }),
+                    });
+                }
+            }
+        } else {
+            // create a new launch config
+            launchConfig = {
+                version: "0.2.0",
+                configurations: [{
+                    ...debugInformation,
+                    name: NAME,
+                    ...(debugInformation.type === 'node' && {
+                        sourceMaps: true,
+                        stopOnEntry: true,
+                        outFiles: ["${workspaceFolder}/out/**/*.js"] // eslint-disable-line
+                    }),
+                }]
+            };
+        }
+
+        // write file
+        fs.writeFileSync(launchJson, JSON.stringify(launchConfig, null, 4));
+    }
+
+    updateLocalRoot(debugInformation: any) {
+        switch (debugInformation.type) {
+            case 'python':
+                debugInformation.pathMappings.forEach((pm: {localRoot: string, remoteRoot: string}) => {
+                    pm.localRoot = `${pm.localRoot}/src`;
+                });
+                break;
+            default:
+                // nothing to do
+        }
+
     }
 
 }
