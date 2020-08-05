@@ -48,9 +48,6 @@ export enum Commands {
     PushPolyglot = "vrdev.polyglot.push",
     RunPolyglot = "vrdev.polyglot.run",
     DebugPolyglot = "vrdev.polyglot.debug",
-    PackagePushPolyglot = "vrdev.polyglot.package-push",
-    PackagePushRunPolyglot = "vrdev.polyglot.package-push-run",
-    PackagePushDebugPolyglot = "vrdev.polyglot.package-push-debug",
 }
 
 export enum FixCommands {
