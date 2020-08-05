@@ -11,7 +11,7 @@ import { AbxActionDefinition, ActionRuntime, ActionType, getActionManifest, Pack
 import { getActionRuntime } from './utils';
 import { VraNgRestClient } from '../rest';
 
-export default class AbxAction {
+export class AbxAction {
 
     /**
      * Create an AbxAction from local package definition
@@ -32,7 +32,7 @@ export default class AbxAction {
      */
     static async fromRemoteState(client: VraNgRestClient, projectId: string, action: AbxAction): Promise<AbxAction | null> {
 
-        const serverAction = await client.getActionByName(action.name, projectId);
+        const serverAction = await client.getAbxActionByName(action.name, projectId);
         if (!serverAction) {
             return null;
         }

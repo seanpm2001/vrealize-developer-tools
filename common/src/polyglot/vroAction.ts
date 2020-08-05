@@ -11,7 +11,7 @@ import { ActionRuntime, ActionType, getActionManifest, PackageDefinition, VroAct
 import { getActionRuntime } from './utils';
 import { VroRestClient } from '../rest';
 
-export default class VroAction {
+export class VroAction {
 
     /**
      * Create a VroAction from local package definition
@@ -33,7 +33,7 @@ export default class VroAction {
 
         // find module
         const modules = await client.getActionSubcategories();
-        const module = modules.data.link.find((m: any) => {
+        const module = modules.link.find((m: any) => {
             return (m.href as string).endsWith(`${action.module}/`);
         });
         if (!module) {
@@ -43,7 +43,7 @@ export default class VroAction {
 
         // find action within the module
         const moduleContents = await client.getCategoryById(remoteModuleId);
-        const correctLink = moduleContents.data.relations.link
+        const correctLink = moduleContents.relations.link
         .filter((l: any) => l.hasOwnProperty('attributes'))
         .find((l: any) => l.attributes.find((a: any) => a.name === 'name' && a.value === action.name));
         if (!correctLink) {
@@ -53,18 +53,18 @@ export default class VroAction {
 
         // fetch action information
         const remoteActionContents = await client.getActionById(remoteActionId);
-        const remoteActionVersion = remoteActionContents.data.version;
-        const remoteActionEntryPoint = remoteActionContents.data.entryPoint;
-        const remoteActionOutputType = remoteActionContents.data['output-type'];
+        const remoteActionVersion = remoteActionContents.version;
+        const remoteActionEntryPoint = remoteActionContents.entryPoint;
+        const remoteActionOutputType = remoteActionContents['output-type'];
         // get inputs
         const remoteActionInputs: {[key: string]: string} = {};
-        remoteActionContents.data['input-parameters'].forEach((param: { name: string, type: string }) => {
+        remoteActionContents['input-parameters'].forEach((param: { name: string, type: string }) => {
             remoteActionInputs[param.name] = param.type;
         });
 
         const remoteCatalogContents = await client.getActionContentsById(remoteActionId);
-        const remoteActionTags = remoteCatalogContents.data.attributes.find((a: any) => a.name === 'globalTags').value?.split(' ');
-        const reamoteActionDescription = remoteCatalogContents.data.attributes.find((a: any) => a.name === 'description').value?.split(' ');
+        const remoteActionTags = remoteCatalogContents.attributes.find((a: any) => a.name === 'globalTags').value?.split(' ');
+        const reamoteActionDescription = remoteCatalogContents.attributes.find((a: any) => a.name === 'description').value?.split(' ');
 
         // construct remote action
         const remoteAction = new VroAction({

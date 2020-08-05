@@ -7,6 +7,7 @@ import * as http from "http"
 
 import * as fs from "fs-extra"
 import * as request from "request-promise-native"
+import { ActionRuntime } from "@vmware-pscoe/polyglotpkg"
 
 import { ApiCategoryType } from "../types"
 import { BaseConfiguration, BaseEnvironment } from "../platform"
@@ -605,4 +606,45 @@ export class VroRestClient {
     async getActionContentsById(actionId: string): Promise<any> {
         return this.send("GET", `catalog/System/Action/${actionId}`)
     }
+
+    async createPolyglotAction(body: {
+        module: string,
+        name: string,
+        description: string,
+        runtime: ActionRuntime,
+        version: string,
+        entryPoint: string,
+        'output-type': string,
+        'input-parameters': any
+    }) {
+        return this.send("POST", 'actions', { body });
+    }
+
+    async updatePolyglotAction(actionId: string, body: {
+        module: string,
+        name: string,
+        runtime: ActionRuntime,
+        version: string,
+        entryPoint: string,
+        'output-type': string,
+        'input-parameters': any
+    }) {
+        return this.send("PUT", `actions/${actionId}`, { body });
+    }
+
+    async updatePolyglotActionBundle(actionId: string, content: Uint8Array) {
+
+        // create form data
+        const formData = {
+            bundle: {
+                value: content,
+                options: {
+                    filepath: this.settings.polyglotBundle,
+                    contentType: 'application/zip'
+                }
+            }
+        }
+
+        return this.send("POST", `actions/${actionId}/bundle`, { json: false, formData });
+    };
 }

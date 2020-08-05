@@ -37,49 +37,40 @@ export class PackagePolyglot extends BaseVraCommand {
         const workspaceFolder = await this.askForWorkspace("Select the workspace of the Polyglot/ABX package");
         this.logger.info(`Workspace folder: ${workspaceFolder.uri.fsPath}`);
 
-        try {
+        const actionType = await determineActionType(workspaceFolder.uri.fsPath);
 
-            const actionType = await determineActionType(workspaceFolder.uri.fsPath);
+        const packager = new Packager({
+            workspace: workspaceFolder.uri.fsPath,
+            out: path.join(workspaceFolder.uri.fsPath, this.config.polyglotOut),
+            bundle: path.join(workspaceFolder.uri.fsPath, this.config.polyglotBundle),
+            vro: path.join(workspaceFolder.uri.fsPath, path.dirname(this.config.polyglotBundle), 'vro'),
+            skipVro: true,
+            env: actionType,
+            ...(this.logger.channel && { outputStream: this.logger.channel.raw() }),
+        });
 
-            const packager = new Packager({
-                workspace: workspaceFolder.uri.fsPath,
-                out: path.join(workspaceFolder.uri.fsPath, this.config.polyglotOut),
-                bundle: path.join(workspaceFolder.uri.fsPath, this.config.polyglotBundle),
-                vro: path.join(workspaceFolder.uri.fsPath, path.dirname(this.config.polyglotBundle), 'vro'),
-                skipVro: false,
-                env: actionType,
-                ...(this.logger.channel && { outputStream: this.logger.channel.raw() }),
-            });
+        await vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                cancellable: false
+            },
+            async (progress) => {
 
-            await vscode.window.withProgress(
-                {
-                    location: vscode.ProgressLocation.Notification,
-                    cancellable: false
-                },
-                async (progress) => {
+                packager.on(Events.COMPILE_START, () => {
+                    progress.report({ message: "Compiling project..." });
+                    this.logger.info("Compiling project...");
+                });
+                packager.on(Events.DEPENDENCIES_START, () => {
+                    progress.report({ message: "Bundling dependencies..." });
+                    this.logger.info("Bundling dependencies...");
+                });
+                packager.on(Events.BUNDLE_START, () => {
+                    progress.report({ message: "Packaging project..." });
+                    this.logger.info("Packaging project...");
+                });
+                await packager.packageProject();
 
-                    packager.on(Events.COMPILE_START, () => {
-                        progress.report({ message: "Compiling project..." });
-                        this.logger.info("Compiling project...");
-                    });
-                    packager.on(Events.DEPENDENCIES_START, () => {
-                        progress.report({ message: "Bundling dependencies..." });
-                        this.logger.info("Bundling dependencies...");
-                    });
-                    packager.on(Events.BUNDLE_START, () => {
-                        progress.report({ message: "Packaging project..." });
-                        this.logger.info("Packaging project...");
-                    });
-                    await packager.packageProject();
-
-                }
-            );
-        } catch (err) {
-            const message = `Error: ${err.message ?? err}`;
-            this.logger.error(err);
-            // TODO: show channel
-            vscode.window.showErrorMessage(message);
-        }
-
+            }
+        );
     }
 }

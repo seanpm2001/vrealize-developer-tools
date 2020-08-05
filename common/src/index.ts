@@ -22,5 +22,6 @@ export * from "./platform"
 export * from "./types"
 export * from "./rest"
 export * from "./hierarchy"
+export * from "./polyglot"
 
 export { di, proc, promise, uri, validate }

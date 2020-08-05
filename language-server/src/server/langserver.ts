@@ -7,6 +7,8 @@
 
 require("module-alias/register")
 
+import { Writable } from "stream"
+
 import { di, LogChannel, Logger } from "vrealize-common"
 import { IConnection } from "vscode-languageserver"
 
@@ -50,7 +52,10 @@ function getLoggingChannel(connection: IConnection): LogChannel {
 
         error(message: string) {
             connection.console.error(message)
-        }
+        },
+
+        // TODO: wrap console in writable stream
+        raw: () => new Writable(),
     }
 }
 
