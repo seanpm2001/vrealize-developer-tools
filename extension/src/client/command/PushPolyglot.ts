@@ -42,16 +42,14 @@ export class PushPolyglot extends BaseVraCommand {
         this.logger.info(`Workspace folder: ${workspaceFolder.uri.fsPath}`);
 
         const localBundle = await this.getLocalBundle();
-        if (!localBundle) {
-            throw new Error(`Local bundle not found`);
-        }
 
         switch (await determineActionType(workspaceFolder.uri.fsPath)) {
             case ActionType.ABX:
                 if (!this.vraRestClient) {
                     this.vraRestClient = await this.getRestClient();
                 }
-                const abxIntegration = await AbxActionIntegration.build(workspaceFolder.uri.fsPath, this.vraRestClient, localBundle);
+                const projectId = ''; // TODO: get project id
+                const abxIntegration = await AbxActionIntegration.build(projectId, workspaceFolder.uri.fsPath, this.vraRestClient, localBundle);
                 await abxIntegration.push();
                 break;
             case ActionType.VRO:
@@ -67,10 +65,10 @@ export class PushPolyglot extends BaseVraCommand {
     /**
      * Return the binary content of a compiled local bundle
      */
-    async getLocalBundle(): Promise<Uint8Array | null> {
+    async getLocalBundle(): Promise<Uint8Array | undefined> {
         const bundle = await vscode.workspace.findFiles(this.config.polyglotBundle, '**/node_modules/**', 1);
         if (bundle.length === 0) {
-            return null;
+            return;
         }
         const content = await vscode.workspace.fs.readFile(bundle[0]);
         return content;

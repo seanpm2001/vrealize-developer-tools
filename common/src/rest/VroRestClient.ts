@@ -646,5 +646,26 @@ export class VroRestClient {
         }
 
         return this.send("POST", `actions/${actionId}/bundle`, { json: false, formData });
-    };
+    }
+
+    async runPolyglotAction(actionId: string, body: {
+        'async-execution': boolean,
+        parameters: {
+            name: string,
+            type: string,
+            value: {
+                [key: string]: any,
+            }
+        }[]
+    }) {
+        return this.send("POST", `actions/${actionId}/executions`, { body })
+    }
+
+    async getPolyglotActionRun(runId: string) {
+        return this.send("GET", `actions/runs/${runId}`);
+    }
+
+    async getPolyglotActionRunLogs(runId: string, level: string = 'debug') {
+        return this.send("GET", `actions/${runId}/logs`, { qs: { conditions: [`severity=${level}`] } });
+    }
 }

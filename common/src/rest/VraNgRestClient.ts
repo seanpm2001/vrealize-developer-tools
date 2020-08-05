@@ -259,6 +259,18 @@ export class VraNgRestClient {
         return this.send("PUT", `/abx/api/resources/actions/${actionId}`, { body })
     }
 
+    async runAbxAction(actionId: string, body: {
+        metadata: { actionTrigger: 'test' },
+        inputs: { [key: string]: any },
+        projectId: string
+    }) {
+        return this.send("POST", `/abx/api/resources/actions/${actionId}/action-runs`, { body });
+    }
+
+    async getAbxActionRun(runId: string) {
+        return this.send("GET", `/abx/api/resources/action-runs/${runId}`);
+    }
+
     // -----------------------------------------------------------
     // Project related APIs --------------------------------------
     // -----------------------------------------------------------

@@ -3,23 +3,32 @@
  * SPDX-License-Identifier: MIT
  */
 import * as vscode from 'vscode';
-import { VroAction, VroRestClient } from 'vrealize-common';
+import { getExecutionInputs, Logger, poll, VroAction, VroRestClient } from 'vrealize-common';
+import { delay } from 'lodash';
 
 export class VroActionIntegration {
 
-    private constructor(private readonly vroAction: VroAction,
-        private readonly serverVroAction: VroAction | null,
-        private readonly bundle: Uint8Array,
-        private readonly restClient: VroRestClient) { }
+    private readonly logger = Logger.get("VroActionIntegration");
 
-    static async build(workspaceDir: string,
+    private constructor(
+        private readonly vroAction: VroAction,
+        private readonly serverVroAction: VroAction | null,
+        private readonly restClient: VroRestClient,
+        private readonly bundle?: Uint8Array) { }
+
+    static async build(
+        workspaceDir: string,
         restClient: VroRestClient,
-        bundle: Uint8Array): Promise<VroActionIntegration> {
+        bundle?: Uint8Array
+    ): Promise<VroActionIntegration> {
         const vroAction = await VroAction.fromPackage(workspaceDir);
         const serverVroAction = await VroAction.fromRemoteState(restClient, vroAction);
-        return new VroActionIntegration(vroAction, serverVroAction, bundle, restClient);
+        return new VroActionIntegration(vroAction, serverVroAction, restClient, bundle);
     }
 
+    /**
+     * Push vRO action to remote server
+     */
     async push() {
         await vscode.window.withProgress(
             {
@@ -38,6 +47,49 @@ export class VroActionIntegration {
                 }
                 progress.report({ message: 'uploading bundle', increment: 50 });
                 await this.updateBundle(remoteActionId);
+            }
+        );
+    }
+
+    /**
+     * Remotely run vRO action
+     */
+    async run(outputChannel: vscode.OutputChannel) {
+
+        // short circuit run
+        if (!this.serverVroAction) {
+            throw new Error(`Server VRO action not found`);
+        }
+
+        await vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: `Running ${this.serverVroAction.module}/${this.serverVroAction.name}`,
+                cancellable: false
+            },
+            async () => {
+
+                const remoteAction = this.serverVroAction as VroAction;
+
+                const defs = await remoteAction.getRunDefinition();
+                const parameters = getExecutionInputs(defs);
+
+                outputChannel.clear();
+                outputChannel.show();
+
+                const result = await this.restClient.runPolyglotAction(remoteAction.remoteActionId as string, {
+                    parameters,
+                    'async-execution': true
+                })
+                const executionId = result['execution-id'];
+
+                outputChannel.appendLine(`Running action ${remoteAction.module}/${remoteAction.name} (${executionId})`);
+                outputChannel.appendLine(`Action inputs: ${JSON.stringify(defs, null, 2)}`);
+                const output = await this.monitorExecutionRun(executionId, outputChannel);
+                await this.printExecutionLogs(executionId, outputChannel);
+                outputChannel.appendLine(`Run status: ${output.state} (${executionId})`);
+
+                return output;
             }
         );
     }
@@ -68,7 +120,7 @@ export class VroActionIntegration {
     private async updateAction() {
 
         if (!this.serverVroAction) {
-            throw new Error(`Server ABX action not found`);
+            throw new Error(`Server VRO action not found`);
         }
 
         this.restClient.updatePolyglotAction(this.serverVroAction.remoteActionId as string, {
@@ -90,7 +142,51 @@ export class VroActionIntegration {
      * @param actionId
      */
     private async updateBundle(actionId: string) {
+        if (!this.bundle) {
+            throw new Error(`Local bundle not found`);
+        }
         await this.restClient.updatePolyglotActionBundle(actionId, this.bundle);
+    }
+
+    /**
+     * Wait for action run to complete
+     * @param executionId
+     */
+    private async monitorExecutionRun(executionId: string, outputChannel: vscode.OutputChannel): Promise<any> {
+        let result = null;
+        await poll(async () => {
+            this.logger.debug(`Checking status of run ${executionId}`);
+            const currentState = await this.restClient.getPolyglotActionRun(executionId);
+            if (currentState.state !== 'running') {
+                result = currentState;
+                return true;
+            }
+            return false;
+        },
+        1000, // every second
+        10 * 60 * 1000); // for 10 minutes
+        return result;
+    }
+
+    /**
+     * Print the execution logs to the execution output channel
+     * @param executionId
+     */
+    private printExecutionLogs(executionId: string, outputChannel: vscode.OutputChannel) {
+
+        return new Promise(resolve => {
+            // allow some time for logs to appear
+            delay(async () => {
+                const logs = await this.restClient.getPolyglotActionRunLogs(executionId, 'debug');
+                logs.logs.forEach((line: any) => {
+                    const time = new Date(line.entry['time-stamp-val']).toLocaleString();
+                    const level = line.entry.severity.toUpperCase();
+                    const content = line.entry['short-description'];
+                    outputChannel.appendLine(`${time} [${level}] ${content}`);
+                });
+                resolve();
+            }, 1000);
+        });
     }
 
 }

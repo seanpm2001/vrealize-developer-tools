@@ -94,7 +94,7 @@ export class AbxAction {
         let yamlObj;
         if (runDefs.length > 0) {
             const runDefsYAML = (await vscode.workspace.fs.readFile(runDefs[0])).toString();
-            yamlObj = yaml.safeLoad(runDefsYAML);
+            yamlObj = yaml.safeLoad(runDefsYAML) as { [key: string]: any };
         }
         return yamlObj || {};
     }
