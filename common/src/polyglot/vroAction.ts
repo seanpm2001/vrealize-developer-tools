@@ -2,11 +2,7 @@
  * Copyright 2018-2020 VMware, Inc.
  * SPDX-License-Identifier: MIT
  */
-import * as path from 'path';
-
-import * as vscode from 'vscode';
-import * as yaml from 'js-yaml';
-import { ActionRuntime, ActionType, getActionManifest, PackageDefinition, VroActionDefinition } from '@vmware-pscoe/polyglotpkg';
+import { ActionRuntime, ActionType, getActionManifest, PackageDefinition, VroActionDefinition } from '@vmware-pscoe/polyglotpkg'
 
 import { getActionRuntime } from './utils';
 import { VroRestClient } from '../rest';
@@ -126,18 +122,6 @@ export class VroAction {
         this._inputs = pkg.vro.inputs || {};
         this._outputType = pkg.vro.outputType || 'string';
         this._runtime = getActionRuntime(pkg.platform.runtime || ActionRuntime.VRO_NODEJS_12, ActionType.VRO);
-    }
-
-    async getRunDefinition() {
-        // parse the entrypoint and look for debug definitions
-        const entrypointModule = path.basename(this._entrypoint.split('.')[0]);
-        const runDefs = await vscode.workspace.findFiles(`**/${entrypointModule}.debug.yaml`, '**/node_modules/**', 1);
-        let yamlObj;
-        if (runDefs.length > 0) {
-            const runDefsYAML = (await vscode.workspace.fs.readFile(runDefs[0])).toString();
-            yamlObj = yaml.safeLoad(runDefsYAML);
-        }
-        return yamlObj || {};
     }
 
     get name() {

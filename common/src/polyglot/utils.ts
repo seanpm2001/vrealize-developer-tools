@@ -2,6 +2,11 @@
  * Copyright 2018-2020 VMware, Inc.
  * SPDX-License-Identifier: MIT
  */
+import * as path from 'path';
+
+import * as fs from 'fs-extra';
+import * as glob from 'glob';
+import * as yaml from 'js-yaml';
 import * as ld from 'lodash';
 import { ActionRuntime, ActionType } from '@vmware-pscoe/polyglotpkg';
 
@@ -84,6 +89,30 @@ export async function poll(func: () => Promise<boolean>, interval: number = 100,
             poller = setInterval(runPoller, interval);
         }
     });
+}
+
+/**
+ * Read and parse action run defintion from an accompaning .yaml file
+ * @param entrypoint action entrypoint
+ */
+export async function getRunDefinition(entrypoint: string, workspaceDir: string) {
+    // parse the entrypoint and look for debug definitions
+    const entrypointModule = path.basename(entrypoint.split('.')[0]);
+    const runDefs = glob.sync(`**/${entrypointModule}.debug.{yaml,yml,json}`, {
+        ignore: 'node_modules/**',
+        cwd: workspaceDir,
+        absolute: true
+    });
+    let runDefsObj;
+    if (runDefs.length > 0) {
+        if (runDefs[0].endsWith('.json')) {
+            runDefsObj = await fs.readJSON(runDefs[0]);
+        } else {
+            const runDefsYAML = (await fs.readFile(runDefs[0])).toString();
+            runDefsObj = yaml.safeLoad(runDefsYAML) as { [key: string]: any };
+        }
+    }
+    return runDefsObj || {};
 }
 
 /**

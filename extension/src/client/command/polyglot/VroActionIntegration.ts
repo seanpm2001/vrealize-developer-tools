@@ -7,7 +7,7 @@ import * as path from 'path';
 
 import * as jsonParser from "jsonc-parser"
 import * as vscode from 'vscode';
-import { getExecutionInputs, Logger, poll, VroAction, VroRestClient } from 'vrealize-common';
+import { getExecutionInputs, getRunDefinition, Logger, poll, VroAction, VroRestClient } from 'vrealize-common';
 import { delay } from 'lodash';
 
 export class VroActionIntegration {
@@ -76,7 +76,7 @@ export class VroActionIntegration {
 
                 const remoteAction = this.serverVroAction as VroAction;
 
-                const defs = await remoteAction.getRunDefinition();
+                const defs = await getRunDefinition(remoteAction.entrypoint, this.workspaceDir);
                 const parameters = getExecutionInputs(defs);
 
                 outputChannel.clear();
@@ -116,7 +116,7 @@ export class VroActionIntegration {
 
                 const remoteAction = this.serverVroAction as VroAction;
 
-                const defs = await remoteAction.getRunDefinition();
+                const defs = await getRunDefinition(remoteAction.entrypoint, this.workspaceDir);
                 const parameters = getExecutionInputs(defs);
 
                 const result = await this.restClient.runPolyglotAction(remoteAction.remoteActionId as string, {

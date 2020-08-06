@@ -2,10 +2,7 @@
  * Copyright 2018-2020 VMware, Inc.
  * SPDX-License-Identifier: MIT
  */
-import * as path from 'path';
 
-import * as vscode from 'vscode';
-import * as yaml from 'js-yaml';
 import { AbxActionDefinition, ActionRuntime, ActionType, getActionManifest, PackageDefinition } from '@vmware-pscoe/polyglotpkg';
 
 import { getActionRuntime } from './utils';
@@ -85,18 +82,6 @@ export class AbxAction {
         this._entrypoint = pkg.platform.entrypoint;
         this._inputs = pkg.abx.inputs || {};
         this._runtime = getActionRuntime(pkg.platform.runtime || ActionRuntime.ABX_NODEJS, ActionType.ABX);
-    }
-
-    async getRunDefinition() {
-        // parse the entrypoint and look for debug definitions
-        const entrypointModule = path.basename(this._entrypoint.split('.')[0]);
-        const runDefs = await vscode.workspace.findFiles(`**/${entrypointModule}.debug.yaml`, '**/node_modules/**', 1);
-        let yamlObj;
-        if (runDefs.length > 0) {
-            const runDefsYAML = (await vscode.workspace.fs.readFile(runDefs[0])).toString();
-            yamlObj = yaml.safeLoad(runDefsYAML) as { [key: string]: any };
-        }
-        return yamlObj || {};
     }
 
     get name() {

@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: MIT
  */
 import * as vscode from 'vscode';
-import { AbxAction, AbxExecutionStates, Logger, poll, VraNgRestClient } from 'vrealize-common';
+import { AbxAction, AbxExecutionStates, getRunDefinition, Logger, poll, VraNgRestClient } from 'vrealize-common';
 
 export class AbxActionIntegration {
 
     private readonly logger = Logger.get("AbxActionIntegration");
 
     private constructor(
+        private readonly workspaceDir: string,
         private readonly projectId: string,
         private readonly abxAction: AbxAction,
         private readonly serverAbxAction: AbxAction | null,
@@ -24,7 +25,7 @@ export class AbxActionIntegration {
     ): Promise<AbxActionIntegration> {
         const abxAction = await AbxAction.fromPackage(workspaceDir);
         const serverAbxAction = await AbxAction.fromRemoteState(restClient, projectId, abxAction);
-        return new AbxActionIntegration(projectId, abxAction, serverAbxAction, restClient, bundle);
+        return new AbxActionIntegration(workspaceDir, projectId, abxAction, serverAbxAction, restClient, bundle);
     }
 
     /**
@@ -70,7 +71,7 @@ export class AbxActionIntegration {
 
                 const remoteAction = this.serverAbxAction as AbxAction;
 
-                const inputs = await remoteAction.getRunDefinition();
+                const inputs = await getRunDefinition(remoteAction.entrypoint, this.workspaceDir);
 
                 outputChannel.clear();
                 outputChannel.show();
