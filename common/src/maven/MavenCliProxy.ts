@@ -6,7 +6,7 @@
 import * as path from "path"
 
 import * as fs from "fs-extra"
-
+import * as jwtDecode from "jwt-decode"
 
 import { BaseEnvironment } from "../platform"
 import { MavenInfo, PolyglotRuntime, PolyglotType, ProjectTypeId } from "../types"
@@ -40,7 +40,7 @@ export class MavenCliProxy {
         this.writeTokenPom(tokenPom)
 
         let token = fs.existsSync(tokenFile) ? this.readTokenFile(tokenFile) : null
-        if (!token || this.isExpired(token)) {
+        if (!token || this.isExpired(token) || this.isDiffUserOrTenant(token)) {
             const command = `mvn vrealize:auth -P${this.mavenSettings.profile} -DoutputDir="${tokenFolder}" -N -e`
             const cmdOptions = { cwd: tokenFolder }
 
@@ -157,5 +157,40 @@ export class MavenCliProxy {
         const now = Date.now()
 
         return now > expirationDate
+    }
+
+    private isDiffUserOrTenant(token: { value: string; expirationDate: string }): boolean {
+        let decodedToken
+        try {
+            decodedToken = jwtDecode(token.value)
+        } catch (e) {
+            this.logger.warn(`Invalid local SSO authentication token format!`)
+            return true;
+        }
+
+        // token (stored locally) details
+        const tokenUserQualifier = decodedToken.prn // user@TENANT
+        if (!tokenUserQualifier) {
+            return true;
+        }
+        const tokenUsername = tokenUserQualifier.match(/.+?(?=@)/)
+        if (!tokenUsername) {
+            return true;
+        }
+        const tokenTenant = tokenUserQualifier.match(/(?<=@).+[^\s]/)
+        if (!tokenTenant) {
+            return true;
+        }
+        const tokenDomain = decodedToken.domain
+        if (!tokenDomain) {
+            return true;
+        }
+
+        // Maven active profile details
+        const vroUsername = this.environment.getVroUsername() // user@domain
+        const vroTenant = this.environment.getVroTenant()
+        
+        return (`${tokenUsername[0]}@${tokenDomain}`.toUpperCase() != vroUsername.toUpperCase() || 
+         tokenTenant[0].toUpperCase() != vroTenant.toUpperCase());
     }
 }

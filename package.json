@@ -73,6 +73,16 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "vrdev.views.explorer",
+        "contents": "Connect to vRealize Orchetsrator by selecting a maven profile.\n\n[Select Profile](command:vrdev.change.profile)"
+      },
+      {
+        "view": "vrdev.views.properties",
+        "contents": "Select a node in the Explorer to view its properties."
+      }
+    ],
     "commands": [
       {
         "command": "vrdev.views.explorer.refresh",
@@ -578,6 +588,7 @@
     "@types/glob": "7.1.1",
     "@types/jest": "^24.9.1",
     "@types/js-yaml": "^3.12.5",
+    "@types/jwt-decode": "^2.2.1",
     "@types/keytar": "^4.4.2",
     "@types/lodash": "^4.14.149",
     "@types/micromatch": "^3.1.1",
@@ -589,7 +600,7 @@
     "@types/vscode": "1.40.0",
     "@typescript-eslint/eslint-plugin": "^2.7.0",
     "@typescript-eslint/parser": "^2.7.0",
-    "codecov": "^3.6.5",
+    "codecov": "^3.7.1",
     "eslint": "^6.6.0",
     "eslint-config-prettier": "^6.5.0",
     "eslint-plugin-header": "^3.0.0",
@@ -607,7 +618,7 @@
     "prettier": "^1.19.1",
     "ts-jest": "^25.0.0",
     "typescript": "~3.7.2",
-    "vsce": "^1.69.0"
+    "vsce": "^1.77.0"
   },
   "dependencies": {
     "@vmware-pscoe/polyglotpkg": "./tools/polyglotpkg",
@@ -618,7 +629,8 @@
     "globby": "^11.0.1",
     "js-yaml": "^3.14.0",
     "jsonc-parser": "^2.1.0",
-    "lodash": "^4.17.15",
+    "jwt-decode": "^2.2.0",
+    "lodash": "^4.17.19",
     "micromatch": "^4.0.2",
     "module-alias": "^2.2.2",
     "moment": "^2.24.0",
