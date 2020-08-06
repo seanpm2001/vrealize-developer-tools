@@ -30,7 +30,7 @@
     "npm": ">=6.0.0"
   },
   "author": "VMware WWCoE",
-  "license": "VMware Confidential",
+  "license": "MIT",
   "files": [
     "dist/**/*.*",
     "bin/**/*.*",

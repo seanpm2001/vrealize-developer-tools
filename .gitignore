@@ -22,3 +22,11 @@ node_modules/
 
 language-server/src/proto/**
 workflow-schema/*
+
+.classpath
+.project
+build/
+.DS_Store
+
+# vropkg-specific rules
+tools/vropkg/test/target*

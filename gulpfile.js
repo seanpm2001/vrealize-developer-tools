@@ -161,6 +161,11 @@ gulp.task(
     })
 )
 
+gulp.task("build:vropkg", done => {
+
+    done()
+});
+
 gulp.task("default", gulp.series("watch"))
 
 function exec(cmd, args, cwd, stdio = "inherit") {

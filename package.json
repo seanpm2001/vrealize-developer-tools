@@ -640,6 +640,8 @@
     "fsevents": "1.2.13"
   },
   "scripts": {
-    "preinstall": "node build/preinstall.js"
+    "preinstall": "node build/preinstall.js",
+    "build:vropkg": "cd tools/vropkg && yarn install && yarn build",
+    "build:polyglotpkg": "cd tools/polyglotpkg && yarn install && yarn build"
   }
 }
