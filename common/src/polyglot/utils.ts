@@ -5,7 +5,7 @@
 import * as path from 'path';
 
 import * as fs from 'fs-extra';
-import * as glob from 'glob';
+import * as globby from 'globby';
 import * as yaml from 'js-yaml';
 import * as ld from 'lodash';
 import { ActionRuntime, ActionType } from '@vmware-pscoe/polyglotpkg';
@@ -98,8 +98,7 @@ export async function poll(func: () => Promise<boolean>, interval: number = 100,
 export async function getRunDefinition(entrypoint: string, workspaceDir: string) {
     // parse the entrypoint and look for debug definitions
     const entrypointModule = path.basename(entrypoint.split('.')[0]);
-    const runDefs = glob.sync(`**/${entrypointModule}.debug.{yaml,yml,json}`, {
-        ignore: 'node_modules/**',
+    const runDefs = globby.sync([`**/${entrypointModule}.debug.{yaml,yml,json}`, '!**/node_modules/**'], {
         cwd: workspaceDir,
         absolute: true
     });

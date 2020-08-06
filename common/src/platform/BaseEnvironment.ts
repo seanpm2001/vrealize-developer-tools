@@ -6,7 +6,7 @@
 import * as path from "path"
 
 import * as fs from "fs-extra"
-import * as glob from "glob"
+import * as globby from "globby"
 
 import { default as Logger } from "../logger"
 import { BaseConfiguration } from "./BaseConfiguration"
@@ -95,12 +95,12 @@ export abstract class BaseEnvironment {
 
     resolvePluginHintFiles(): string[] {
         const workingDir = path.join(this.getGlobalHintsDir(), this.getHostname(), "plugins")
-        return glob.sync("./*.pb", { cwd: workingDir, absolute: true })
+        return globby.sync("./*.pb", { cwd: workingDir, absolute: true })
     }
 
     resolveDependenciesHintFiles(workspaceFolder: WorkspaceFolder): string[] {
         const dependenciesHintsDir = path.join(this.getLocalHintsDir(workspaceFolder), "dependencies")
-        const dependenciesHintFiles = glob.sync("./*.pb", { cwd: dependenciesHintsDir, absolute: true })
+        const dependenciesHintFiles = globby.sync("./*.pb", { cwd: dependenciesHintsDir, absolute: true })
         return dependenciesHintFiles
     }
 
