@@ -9,7 +9,7 @@ import * as fs from "fs-extra"
 
 
 import { BaseEnvironment } from "../platform"
-import { MavenInfo } from "../types"
+import { MavenInfo, PolyglotRuntime, PolyglotType, ProjectTypeId } from "../types"
 
 import { Logger, proc } from ".."
 
@@ -20,7 +20,8 @@ const archetypeIdByProjectType: { [key: string]: string } = {
     "vro-mixed": "package-mixed-archetype",
     "vra-yaml": "package-vra-archetype",
     "vra-vro": "package-vrealize-archetype",
-    "vra-ng": "package-vra-ng-archetype"
+    "vra-ng": "package-vra-ng-archetype",
+    "polyglot": "package-polyglot-archetype",
 }
 
 export class MavenCliProxy {
@@ -51,12 +52,14 @@ export class MavenCliProxy {
     }
 
     createProject(
-        projectType: string,
+        projectType: ProjectTypeId,
         groupId: string,
         artifactId: string,
         destinationDir: string,
         requiresWorkflows: boolean,
-        workflowsPath?: string
+        workflowsPath?: string,
+        polyglotType?: PolyglotType,
+        polyglotRuntime?: PolyglotRuntime
     ): Promise<proc.CmdResult> {
         const archetypeId = archetypeIdByProjectType[projectType]
 
@@ -66,10 +69,16 @@ export class MavenCliProxy {
 
         let archetypeGroup = "o11n"
 
-        if (projectType === "vra-yaml") {
-            archetypeGroup = "vra"
-        } else if (projectType === "vra-ng") {
-            archetypeGroup = "vra-ng"
+        switch (projectType) {
+            case 'vra-yaml':
+                archetypeGroup = 'vra';
+                break;
+            case 'vra-ng':
+                archetypeGroup = 'vra-ng';
+                break;
+            case 'polyglot':
+                archetypeGroup = 'polyglot';
+                break;
         }
 
         let command =
@@ -79,6 +88,11 @@ export class MavenCliProxy {
             `-DarchetypeVersion=${this.environment.buildToolsVersion} ` +
             `-DgroupId=${groupId} ` +
             `-DartifactId=${artifactId}`
+
+        if (projectType === 'polyglot') {
+            command += ` -Dtype=${polyglotType?.id} ` +
+                `-Druntime=${polyglotRuntime?.id}`
+        }
 
         if (requiresWorkflows) {
             if (!workflowsPath) {

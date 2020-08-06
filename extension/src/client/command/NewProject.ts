@@ -5,7 +5,7 @@
 
 import * as path from "path"
 
-import { AutoWire, Logger, MavenCliProxy, ProjectPickInfo, ProjectType } from "vrealize-common"
+import { AutoWire, Logger, MavenCliProxy, PolyglotRuntime, PolyglotType, ProjectPickInfo, ProjectType, ProjectTypeId } from "vrealize-common"
 import * as vscode from "vscode"
 
 import { Commands, Patterns } from "../constants"
@@ -56,6 +56,43 @@ const projectTypes: ProjectType[] = [
         label: "vRA 7.x and vRO",
         containsWorkflows: true,
         description: "A vRO Mixed project with an additional module for vRA content."
+    },
+    {
+        id: "polyglot",
+        label: "Polyglot action",
+        containsWorkflows: false,
+        description: "Polyglot action",
+    },
+]
+
+const polyglotTypes: PolyglotType[] = [
+    {
+        id: 'vro',
+        label: 'VRO',
+        description: 'vRealize Orchestrator Polyglot action'
+    },
+    {
+        id: 'abx',
+        label: 'ABX',
+        description: 'vRealize Automation Action Based Extensibility'
+    }
+]
+
+const polyglotRuntimes: PolyglotRuntime[] = [
+    {
+        id: 'nodejs',
+        label: 'NodeJS',
+        description: 'NodeJS'
+    },
+    {
+        id: 'python',
+        label: 'Python',
+        description: 'Python'
+    },
+    {
+        id: 'powershell',
+        label: 'PowerShell',
+        description: 'PowerShell'
     }
 ]
 
@@ -100,6 +137,16 @@ export class NewProject extends Command<void> {
     private buildStepTree(): StepNode<QuickPickStep> {
         const rootNode: StepNode<QuickPickStep> = {
             value: new ProjectTypePickStep(),
+            next: (state) => state.projectType.id as ProjectTypeId === 'polyglot' ? polyglotTypeNode : groupIdNode
+        }
+
+        const polyglotTypeNode: StepNode<QuickPickStep> = {
+            value: new PolyglotTypePickStep(),
+            next: () => polyglotRuntimeNode
+        }
+
+        const polyglotRuntimeNode: StepNode<QuickPickStep> = {
+            value: new PolyglotRuntimePickStep(),
             next: () => groupIdNode
         }
 
@@ -112,7 +159,7 @@ export class NewProject extends Command<void> {
         const projectNameNode: StepNode<QuickInputStep> = {
             value: new ProjectNameInputStep(),
             parent: groupIdNode,
-            next: () =>workflowsPathNode
+            next: () => workflowsPathNode
         }
 
         const workflowsPathNode: StepNode<QuickInputStep> = {
@@ -166,7 +213,9 @@ export class NewProject extends Command<void> {
                                 this.state.name,
                                 this.state.destination.fsPath,
                                 this.state.projectType.containsWorkflows,
-                                this.state.workflowsPath
+                                this.state.workflowsPath,
+                                this.state.polyglotType,
+                                this.state.polyglotRuntime
                             )
                             .catch(reason => {
                                 this.logger.error("An error occurred while generating the project.", reason)
@@ -206,6 +255,40 @@ class ProjectTypePickStep implements QuickPickStep {
 
     updateState(state: StepState<State>, selection: ProjectType[]): void {
         state.projectType = selection[0]
+    }
+}
+
+class PolyglotTypePickStep implements QuickPickStep {
+    matchOnDescription?: boolean = false
+    matchOnDetail?: boolean = false
+    multiselect: boolean = false
+    placeholder: string = "Pick a Polyglot action type"
+    items: PolyglotType[] = polyglotTypes
+    title = TITLE
+
+    constructor() {
+        // empty
+    }
+
+    updateState(state: StepState<State>, selection: PolyglotType[]): void {
+        state.polyglotType = selection[0]
+    }
+}
+
+class PolyglotRuntimePickStep implements QuickPickStep {
+    matchOnDescription?: boolean = false
+    matchOnDetail?: boolean = false
+    multiselect: boolean = false
+    placeholder: string = "Pick a Polyglot action runtime"
+    items: PolyglotRuntime[] = polyglotRuntimes
+    title = TITLE
+
+    constructor() {
+        // empty
+    }
+
+    updateState(state: StepState<State>, selection: PolyglotRuntime[]): void {
+        state.polyglotRuntime = selection[0]
     }
 }
 
