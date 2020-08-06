@@ -3,6 +3,9 @@ import fs from 'fs-extra';
 import which from 'which';
 import { spawn } from 'child_process';
 import { ActionType, ActionRuntime, AbxActionDefinition, VroActionDefinition, PlatformDefintion } from './model';
+import createLogger from './logger';
+
+const logger = createLogger();
 
 /**
  * Determine the action runtime based on the action manifest or
@@ -96,6 +99,8 @@ export function run(cmd: string, args: Array<string> = [], cwd: string = process
             const proc = spawn(quoteString(commandPath[0]), args, { cwd, shell: true, stdio: 'inherit' });
             proc.on('close', exitCode => {
                 if (exitCode !== 0) {
+                    const commandLine = `${quoteString(commandPath[0])} ${args.join(' ')}`;
+                    logger.error(`Error running command: ${commandLine}`);
                     return reject(new Error(`Exit code for ${cmd}: ${exitCode}`));
                 }
                 resolve(exitCode);

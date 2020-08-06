@@ -17,6 +17,8 @@ import { VraIdentityStore } from "../storage"
 @AutoWire
 export class PackagePolyglot extends BaseVraCommand {
     private readonly logger = Logger.get("PackagePolyglot")
+    private packager: Packager;
+    private lastWorkspace: string;
 
     get commandId(): string {
         return Commands.PackagePolyglot
@@ -39,15 +41,19 @@ export class PackagePolyglot extends BaseVraCommand {
 
         const actionType = await determineActionType(workspaceFolder.uri.fsPath);
 
-        const packager = new Packager({
-            workspace: workspaceFolder.uri.fsPath,
-            out: path.join(workspaceFolder.uri.fsPath, this.config.polyglotOut),
-            bundle: path.join(workspaceFolder.uri.fsPath, this.config.polyglotBundle),
-            vro: path.join(workspaceFolder.uri.fsPath, path.dirname(this.config.polyglotBundle), 'vro'),
-            skipVro: true,
-            env: actionType,
-            ...(this.logger.channel && { outputStream: this.logger.channel.raw() }),
-        });
+        // create new packager only when needed
+        if (!this.packager || this.lastWorkspace !== workspaceFolder.uri.fsPath) {
+            this.lastWorkspace = workspaceFolder.uri.fsPath;
+            this.packager = new Packager({
+                workspace: workspaceFolder.uri.fsPath,
+                out: path.join(workspaceFolder.uri.fsPath, this.config.polyglotOut),
+                bundle: path.join(workspaceFolder.uri.fsPath, this.config.polyglotBundle),
+                vro: path.join(workspaceFolder.uri.fsPath, path.dirname(this.config.polyglotBundle), 'vro'),
+                skipVro: true,
+                env: actionType,
+                ...(this.logger.channel && { outputStream: this.logger.channel.raw() }),
+            });
+        }
 
         await vscode.window.withProgress(
             {
@@ -56,19 +62,19 @@ export class PackagePolyglot extends BaseVraCommand {
             },
             async (progress) => {
 
-                packager.on(Events.COMPILE_START, () => {
+                this.packager.once(Events.COMPILE_START, () => {
                     progress.report({ message: "Compiling project..." });
                     this.logger.info("Compiling project...");
                 });
-                packager.on(Events.DEPENDENCIES_START, () => {
+                this.packager.once(Events.DEPENDENCIES_START, () => {
                     progress.report({ message: "Bundling dependencies..." });
                     this.logger.info("Bundling dependencies...");
                 });
-                packager.on(Events.BUNDLE_START, () => {
+                this.packager.once(Events.BUNDLE_START, () => {
                     progress.report({ message: "Packaging project..." });
                     this.logger.info("Packaging project...");
                 });
-                await packager.packageProject();
+                await this.packager.packageProject();
 
             }
         );
