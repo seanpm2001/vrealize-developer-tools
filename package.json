@@ -529,6 +529,13 @@
           "description": "Enables experimental vRO TypeScript support.",
           "scope": "application"
         },
+        "vrdev.experimental.polyglot": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Enables experimental Polyglot support.",
+          "scope": "application"
+        },
         "vrdev.buildTools.defaultVersion": {
           "type": "string",
           "required": false,

@@ -22,6 +22,12 @@ interface State extends ProjectPickInfo {
 
 const projectTypes: ProjectType[] = [
     {
+        id: "vro-ts",
+        label: "vRO TypeScript-based",
+        containsWorkflows: false,
+        description: "A vRO project that contains actions, workflows and configs as TypeScript files."
+    },
+    {
         id: "vro-js",
         label: "vRO JavaScript-based",
         containsWorkflows: false,
@@ -112,31 +118,25 @@ export class NewProject extends Command<void> {
     }
 
     async execute(context: vscode.ExtensionContext): Promise<void> {
-        const noTypeScriptProject = projectTypes.every(e => e.id !== "vro-ts")
-        if (this.config.vrdev.experimental.typescript && noTypeScriptProject) {
-            projectTypes.unshift({
-                id: "vro-ts",
-                label: "vRO TypeScript-based",
-                containsWorkflows: false,
-                description: "A vRO project that contains actions, workflows and configs as TypeScript files."
-            })
-        } else if (!this.config.vrdev.experimental.typescript && !noTypeScriptProject) {
+
+        const availableProjectTypes = projectTypes
             // remove the TS project from the list
-            projectTypes.shift()
-        }
+            .filter(pt => pt.id !== "vro-ts" || this.config.vrdev.experimental.typescript)
+            // remove the Polyglot project form the list
+            .filter(pt => pt.id !== "polyglot" || this.config.vrdev.experimental.polyglot)
 
         this.logger.info("Executing command New Project")
         const multiStep = new MultiStepInput(TITLE, context, this.config)
-        await multiStep.run(this.buildStepTree(), this.state)
+        await multiStep.run(this.buildStepTree(availableProjectTypes), this.state)
 
         if (this.state.completed) {
             await this.showSaveDialog()
         }
     }
 
-    private buildStepTree(): StepNode<QuickPickStep> {
+    private buildStepTree(projectTypes: ProjectType[]): StepNode<QuickPickStep> {
         const rootNode: StepNode<QuickPickStep> = {
-            value: new ProjectTypePickStep(),
+            value: new ProjectTypePickStep(projectTypes),
             next: (state) => state.projectType.id as ProjectTypeId === 'polyglot' ? polyglotTypeNode : groupIdNode
         }
 
@@ -246,10 +246,9 @@ class ProjectTypePickStep implements QuickPickStep {
     matchOnDetail?: boolean = false
     multiselect: boolean = false
     placeholder: string = "Pick a project type"
-    items: ProjectType[] = projectTypes
     title = TITLE
 
-    constructor() {
+    constructor(public items: ProjectType[] = projectTypes) {
         // empty
     }
 

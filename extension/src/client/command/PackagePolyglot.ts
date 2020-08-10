@@ -29,7 +29,15 @@ export class PackagePolyglot extends BaseVraCommand {
     }
 
     async execute(context: vscode.ExtensionContext): Promise<void> {
-        this.logger.info("Executing command PackagePolyglot")
+        this.logger.info("Executing command PackagePolyglot");
+
+        if (!this.config.vrdev.experimental.polyglot) {
+            vscode.window.showErrorMessage(
+                "Interacting with Polyglot projects is experimental feature and " +
+                    "must be enabled via the `vrdev.experimental.polyglot` setting"
+            )
+            return
+        }
 
         if (this.env.workspaceFolders.length == 0) {
             this.logger.error("PackagePolyglot:execute() No opened workspace folders")
