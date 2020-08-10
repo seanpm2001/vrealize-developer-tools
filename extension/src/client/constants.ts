@@ -23,7 +23,6 @@ export enum Commands {
     OpenResource = "vrdev.open.resource",
 
     RunAction = "vrdev.run.action",
-    ToggleTypeScript = "vrdev.toggle.typescript",
 
     RefreshExplorer = "vrdev.views.explorer.refresh",
     RevealItemInExplorer = "vrdev.views.explorer.revealItem",

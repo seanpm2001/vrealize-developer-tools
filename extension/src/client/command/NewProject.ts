@@ -120,8 +120,6 @@ export class NewProject extends Command<void> {
     async execute(context: vscode.ExtensionContext): Promise<void> {
 
         const availableProjectTypes = projectTypes
-            // remove the TS project from the list
-            .filter(pt => pt.id !== "vro-ts" || this.config.vrdev.experimental.typescript)
             // remove the Polyglot project form the list
             .filter(pt => pt.id !== "polyglot" || this.config.vrdev.experimental.polyglot)
 

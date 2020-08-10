@@ -154,14 +154,6 @@ export class RunAction extends Command<void> {
             return false
         }
 
-        if (!this.config.vrdev.experimental.typescript && document.languageId === "typescript") {
-            vscode.window.showErrorMessage(
-                "Running a TypeScript action is experimental feature and " +
-                    "must be enabled via the `vrdev.experimental.typescript` setting"
-            )
-            return false
-        }
-
         return true
     }
 

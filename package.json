@@ -38,7 +38,6 @@
     "onCommand:vrdev.open.config",
     "onCommand:vrdev.open.resource",
     "onCommand:vrdev.run.action",
-    "onCommand:vrdev.toggle.typescript",
     "onCommand:vrdev.vra.auth.configure",
     "onCommand:vrdev.blueprint.create",
     "onCommand:vrdev.blueprint.fetch",
@@ -202,11 +201,6 @@
           "light": "assets/icons/light/zap.svg",
           "dark": "assets/icons/dark/zap.svg"
         }
-      },
-      {
-        "command": "vrdev.toggle.typescript",
-        "title": "Toggle TypeScript Support (Experimental)",
-        "category": "vRealize"
       },
       {
         "command": "vrdev.vra.auth.configure",
@@ -521,13 +515,6 @@
           "default": "443",
           "description": "",
           "scope": "window"
-        },
-        "vrdev.experimental.typescript": {
-          "type": "boolean",
-          "required": false,
-          "default": false,
-          "description": "Enables experimental vRO TypeScript support.",
-          "scope": "application"
         },
         "vrdev.experimental.polyglot": {
           "type": "boolean",
