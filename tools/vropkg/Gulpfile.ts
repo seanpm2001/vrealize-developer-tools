@@ -9,6 +9,7 @@ gulp.task("clean", async () => {
 	await fs.remove(path.join('test', 'target-flat'))
 	await fs.remove(path.join('test', 'target-flat.tmp'))
 	await fs.remove(path.join('test', 'target-tree'))
+	await fs.remove(path.join('test', 'com.vmware.pscoe.toolchain-expand'))
 });
 
 gulp.task("compile-prod", () => {

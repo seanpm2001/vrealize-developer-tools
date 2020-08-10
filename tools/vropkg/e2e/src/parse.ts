@@ -65,13 +65,34 @@ describe("End-to-End Tests", () => {
             .filter(file => !file.includes('META-INF') && !file.includes('version-history'))
             .map(file => path.normalize(file).replace(expand(...destination), '').toLowerCase())
             .sort());
-        
+
         expect(sourceFiles).toEqual(destinationFiles, `Source path ${sourcePath} does not match destination path ${destinationPath}`);
     }
 
     const expand = (...args:string[]) => path.join(currentPath, ...args);
 
+    // Unzip tree structure
+    const unzipTree = async () => {
+        const source = expand('test', 'com.vmware.pscoe.toolchain-expand.zip');
+        const dest = expand('test', 'com.vmware.pscoe.toolchain-expand');
+        if (!(await fs.pathExists(dest))) {
+            await fs.createReadStream(source).pipe(unzipper.Extract({ path: dest })).promise();
+        }
+    }
+
+    // Unzip flat structure
+    const unzipFlat = async () => {
+        const source = expand('test', 'com.vmware.pscoe.toolchain.package');
+        const dest = expand('test', 'target-flat.tmp')
+        if (!(await fs.pathExists(dest))) {
+            await fs.createReadStream(source).pipe(unzipper.Extract({ path: dest })).promise();
+        }
+    }
+
     it("Convert XML project from tree to flat structure", async () => {
+
+        await unzipTree();
+
         await runCase("Project tree -> flat", [
             expand("bin", "vropkg"),
             '--in', 'tree',
@@ -82,15 +103,15 @@ describe("End-to-End Tests", () => {
             '--certificatesPEM', fs.readFileSync(expand('test', 'cert.pem')).toString(),
         ]);
 
-        await fs
-            .createReadStream(expand('test', 'com.vmware.pscoe.toolchain.package'))
-            .pipe(unzipper.Extract({ path: expand('test', 'target-flat.tmp') }))
-            .promise();
+        await unzipFlat();
 
         compare('target-flat.tmp', 'target-flat', ['elements', '**']);
     })
 
     it("Convert XML project from flat to tree structure", async () => {
+
+        await unzipTree();
+
         await runCase("Project flat -> tree", [
             expand("bin", "vropkg"),
             '--in', 'flat',
