@@ -1,8 +1,8 @@
 import * as fs from "fs-extra";
 import * as gulp from "gulp";
-import * as jasmine from "gulp-jasmine";
 import * as tsc from "gulp-typescript";
 import * as path from 'path';
+const jasmine = require('gulp-jasmine');
 
 gulp.task("clean", async () => {
 	await fs.remove("dist");
@@ -11,7 +11,7 @@ gulp.task("clean", async () => {
 	await fs.remove(path.join('test', 'target-tree'))
 });
 
-gulp.task("compile-prod", done => {
+gulp.task("compile-prod", () => {
 	return compile({
 		declaration: true,
 		removeComments: true
@@ -23,7 +23,7 @@ gulp.task("package-prod", gulp.series(["compile-prod", () => {
 		.pipe(gulp.dest("dist"));
 }]));
 
-gulp.task("compile-e2e", (done) => {
+gulp.task("compile-e2e", () => {
 	let project = tsc.createProject("conf/tsconfig.e2e.json", {
 		declaration: true,
 	});

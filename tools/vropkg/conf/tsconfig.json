@@ -9,11 +9,9 @@
     "strictPropertyInitialization": false,
     "noImplicitAny": false,
     "outDir": "dist",
-    "esModuleInterop": false
+    "esModuleInterop": false,
+    "typeRoots": ["../node_modules/@types"]
   },
-
   "include": ["../src"],
-  "exclude": [
-    "../node_modules"
-  ]
+  "exclude": ["../node_modules"]
 }
