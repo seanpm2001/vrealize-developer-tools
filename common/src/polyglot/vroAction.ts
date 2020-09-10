@@ -54,7 +54,7 @@ export class VroAction {
         const remoteActionOutputType = remoteActionContents['output-type'];
         // get inputs
         const remoteActionInputs: {[key: string]: string} = {};
-        remoteActionContents['input-parameters'].forEach((param: { name: string, type: string }) => {
+        remoteActionContents['input-parameters']?.forEach((param: { name: string, type: string }) => {
             remoteActionInputs[param.name] = param.type;
         });
 
