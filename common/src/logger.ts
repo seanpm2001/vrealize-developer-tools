@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Writable } from "stream";
+import { Writable } from "stream"
 
 import { LogLevel } from "./types/settings"
 

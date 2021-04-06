@@ -10,7 +10,6 @@ import jwt_decode from "jwt-decode"
 
 import { BaseEnvironment } from "../platform"
 import { MavenInfo, PolyglotRuntime, PolyglotType, ProjectTypeId } from "../types"
-
 import { Logger, proc } from ".."
 
 const archetypeIdByProjectType: { [key: string]: string } = {
@@ -21,7 +20,7 @@ const archetypeIdByProjectType: { [key: string]: string } = {
     "vra-yaml": "package-vra-archetype",
     "vra-vro": "package-vrealize-archetype",
     "vra-ng": "package-vra-ng-archetype",
-    "polyglot": "package-polyglot-archetype",
+    "polyglot": "package-polyglot-archetype"
 }
 
 export class MavenCliProxy {
@@ -70,15 +69,15 @@ export class MavenCliProxy {
         let archetypeGroup = "o11n"
 
         switch (projectType) {
-            case 'vra-yaml':
-                archetypeGroup = 'vra';
-                break;
-            case 'vra-ng':
-                archetypeGroup = 'vra-ng';
-                break;
-            case 'polyglot':
-                archetypeGroup = 'polyglot';
-                break;
+            case "vra-yaml":
+                archetypeGroup = "vra"
+                break
+            case "vra-ng":
+                archetypeGroup = "vra-ng"
+                break
+            case "polyglot":
+                archetypeGroup = "polyglot"
+                break
         }
 
         let command =
@@ -89,9 +88,8 @@ export class MavenCliProxy {
             `-DgroupId=${groupId} ` +
             `-DartifactId=${artifactId}`
 
-        if (projectType === 'polyglot') {
-            command += ` -Dtype=${polyglotType?.id} ` +
-                `-Druntime=${polyglotRuntime?.id}`
+        if (projectType === "polyglot") {
+            command += ` -Dtype=${polyglotType?.id} -Druntime=${polyglotRuntime?.id}`
         }
 
         if (requiresWorkflows) {

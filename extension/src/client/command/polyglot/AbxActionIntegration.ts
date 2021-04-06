@@ -2,12 +2,11 @@
  * Copyright 2018-2020 VMware, Inc.
  * SPDX-License-Identifier: MIT
  */
-import * as vscode from 'vscode';
-import { AbxAction, AbxExecutionStates, getRunDefinition, Logger, poll, VraNgRestClient } from 'vrealize-common';
+import * as vscode from "vscode"
+import { AbxAction, AbxExecutionStates, getRunDefinition, Logger, poll, VraNgRestClient } from "vrealize-common"
 
 export class AbxActionIntegration {
-
-    private readonly logger = Logger.get("AbxActionIntegration");
+    private readonly logger = Logger.get("AbxActionIntegration")
 
     private constructor(
         private readonly workspaceDir: string,
@@ -15,7 +14,8 @@ export class AbxActionIntegration {
         private readonly abxAction: AbxAction,
         private readonly serverAbxAction: AbxAction | null,
         private readonly restClient: VraNgRestClient,
-        private readonly bundle?: Uint8Array) { }
+        private readonly bundle?: Uint8Array
+    ) {}
 
     static async build(
         projectId: string,
@@ -23,9 +23,9 @@ export class AbxActionIntegration {
         restClient: VraNgRestClient,
         bundle?: Uint8Array
     ): Promise<AbxActionIntegration> {
-        const abxAction = await AbxAction.fromPackage(workspaceDir);
-        const serverAbxAction = await AbxAction.fromRemoteState(restClient, projectId, abxAction);
-        return new AbxActionIntegration(workspaceDir, projectId, abxAction, serverAbxAction, restClient, bundle);
+        const abxAction = await AbxAction.fromPackage(workspaceDir)
+        const serverAbxAction = await AbxAction.fromRemoteState(restClient, projectId, abxAction)
+        return new AbxActionIntegration(workspaceDir, projectId, abxAction, serverAbxAction, restClient, bundle)
     }
 
     /**
@@ -40,14 +40,14 @@ export class AbxActionIntegration {
             },
             async (progress, token) => {
                 if (this.serverAbxAction) {
-                    progress.report({ message: 'updating action' });
-                    await this.updateAction();
+                    progress.report({ message: "updating action" })
+                    await this.updateAction()
                 } else {
-                    progress.report({ message: 'creating action' });
-                    await this.createAction();
+                    progress.report({ message: "creating action" })
+                    await this.createAction()
                 }
             }
-        );
+        )
     }
 
     /**
@@ -55,10 +55,9 @@ export class AbxActionIntegration {
      * @param outputChannel
      */
     async run(outputChannel: vscode.OutputChannel) {
-
         // short circuit run
         if (!this.serverAbxAction) {
-            throw new Error(`Server ABX action not found`);
+            throw new Error(`Server ABX action not found`)
         }
 
         await vscode.window.withProgress(
@@ -68,31 +67,28 @@ export class AbxActionIntegration {
                 cancellable: false
             },
             async () => {
+                const remoteAction = this.serverAbxAction as AbxAction
 
-                const remoteAction = this.serverAbxAction as AbxAction;
+                const inputs = await getRunDefinition(remoteAction.entrypoint, this.workspaceDir)
 
-                const inputs = await getRunDefinition(remoteAction.entrypoint, this.workspaceDir);
-
-                outputChannel.clear();
-                outputChannel.show();
+                outputChannel.clear()
+                outputChannel.show()
 
                 const result = await this.restClient.runAbxAction(remoteAction.remoteActionId as string, {
-                    metadata: { actionTrigger: 'test' }, // the action trigger should always be test
+                    metadata: { actionTrigger: "test" }, // the action trigger should always be test
                     inputs,
                     projectId: this.projectId
-                });
+                })
 
-                const executionId = result.id;
+                const executionId = result.id
 
-                outputChannel.appendLine(`Running action ${remoteAction.name} (${executionId})`);
-                outputChannel.appendLine(`Action inputs: ${JSON.stringify(inputs, null, 2)}`);
-                const output = await this.monitorExecutionRun(executionId, outputChannel);
-                outputChannel.appendLine(output.logs);
-                outputChannel.appendLine(`Run status: ${output.runState} (${executionId})`);
-
+                outputChannel.appendLine(`Running action ${remoteAction.name} (${executionId})`)
+                outputChannel.appendLine(`Action inputs: ${JSON.stringify(inputs, null, 2)}`)
+                const output = await this.monitorExecutionRun(executionId, outputChannel)
+                outputChannel.appendLine(output.logs)
+                outputChannel.appendLine(`Run status: ${output.runState} (${executionId})`)
             }
-        );
-
+        )
     }
 
     /**
@@ -100,20 +96,20 @@ export class AbxActionIntegration {
      */
     private async createAction() {
         if (!this.bundle) {
-            throw new Error(`Local bundle not found`);
+            throw new Error(`Local bundle not found`)
         }
-        const compressedContent = (this.bundle as Buffer).toString('base64');
+        const compressedContent = (this.bundle as Buffer).toString("base64")
 
         await this.restClient.createAbxAction({
             runtime: this.abxAction.runtime,
-            actionType: 'SCRIPT',
+            actionType: "SCRIPT",
             projectId: this.projectId,
             compressedContent,
             name: this.abxAction.name,
             description: this.abxAction.description,
             inputs: this.abxAction.inputs,
             entrypoint: this.abxAction.entrypoint
-        });
+        })
     }
 
     /**
@@ -121,24 +117,24 @@ export class AbxActionIntegration {
      */
     private async updateAction() {
         if (!this.bundle) {
-            throw new Error(`Local bundle not found`);
+            throw new Error(`Local bundle not found`)
         }
-        const compressedContent = (this.bundle as Buffer).toString('base64');
+        const compressedContent = (this.bundle as Buffer).toString("base64")
 
         if (!this.serverAbxAction) {
-            throw new Error(`Server ABX action not found`);
+            throw new Error(`Server ABX action not found`)
         }
 
         await this.restClient.updateAbxAction(this.serverAbxAction.remoteActionId as string, {
             runtime: this.abxAction.runtime,
-            actionType: 'SCRIPT',
+            actionType: "SCRIPT",
             name: this.serverAbxAction.name, // name is required otherwise it is treated as "null"
             description: this.serverAbxAction.description,
             projectId: this.serverAbxAction.remoteProjectId as string,
             compressedContent,
             inputs: this.abxAction.inputs,
-            entrypoint: this.abxAction.entrypoint,
-        });
+            entrypoint: this.abxAction.entrypoint
+        })
     }
 
     /**
@@ -147,33 +143,33 @@ export class AbxActionIntegration {
      * @param outputChannel
      */
     private async monitorExecutionRun(executionId: string, outputChannel: vscode.OutputChannel): Promise<any> {
-
         const finalStates = [
             AbxExecutionStates.COMPLETED,
             AbxExecutionStates.FAILED,
             AbxExecutionStates.CANCELLED,
-            AbxExecutionStates.DEPLOYMENT_FAILED,
-        ];
+            AbxExecutionStates.DEPLOYMENT_FAILED
+        ]
 
-        let result = null;
-        let lastState: string = AbxExecutionStates.UNKNOWN;
-        await poll(async () => {
-            this.logger.debug(`Checking status of run ${executionId}`);
-            const currentState = await this.restClient.getAbxActionRun(executionId);
-            if (currentState.runState !== lastState) {
-                lastState = currentState.runState;
-                const time = new Date().toLocaleString();
-                outputChannel.appendLine(`${time} ${lastState}`);
-            }
-            if (finalStates.includes(currentState.runState)) {
-                result = currentState;
-                return true;
-            }
-            return false;
-        },
-        1000, // every second
-        10 * 60 * 1000); // for 10 minutes
-        return result;
+        let result = null
+        let lastState: string = AbxExecutionStates.UNKNOWN
+        await poll(
+            async () => {
+                this.logger.debug(`Checking status of run ${executionId}`)
+                const currentState = await this.restClient.getAbxActionRun(executionId)
+                if (currentState.runState !== lastState) {
+                    lastState = currentState.runState
+                    const time = new Date().toLocaleString()
+                    outputChannel.appendLine(`${time} ${lastState}`)
+                }
+                if (finalStates.includes(currentState.runState)) {
+                    result = currentState
+                    return true
+                }
+                return false
+            },
+            1000, // every second
+            10 * 60 * 1000
+        ) // for 10 minutes
+        return result
     }
-
 }

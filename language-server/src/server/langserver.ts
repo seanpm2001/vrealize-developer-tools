@@ -54,7 +54,7 @@ function getLoggingChannel(connection: Connection): LogChannel {
         },
 
         // TODO: wrap console in writable stream
-        raw: () => new Writable(),
+        raw: () => new Writable()
     }
 }
 

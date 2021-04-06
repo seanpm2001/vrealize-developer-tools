@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-import * as querystring from 'querystring';
+import * as querystring from "querystring"
 
 import * as request from "request-promise-native"
-import { ActionRuntime } from '@vmware-pscoe/polyglotpkg';
+import { ActionRuntime } from "@vmware-pscoe/polyglotpkg"
 
 import { VraNgAuth } from "./auth"
 import { VraAuthType } from "../types"
@@ -238,49 +238,58 @@ export class VraNgRestClient {
     // -----------------------------------------------------------
 
     async getAbxActionByName(name: string, projectId: string): Promise<any> {
-        const serverActions = await this.send("GET", `/abx/api/resources/actions?${querystring.stringify({
-            $filter: `actionId/projectId eq '${projectId}'`
-        })}`);
-        const serverAction = serverActions.content.find((a: any) => a.name === name);
-        return serverAction || null;
+        const serverActions = await this.send(
+            "GET",
+            `/abx/api/resources/actions?${querystring.stringify({
+                $filter: `actionId/projectId eq '${projectId}'`
+            })}`
+        )
+        const serverAction = serverActions.content.find((a: any) => a.name === name)
+        return serverAction || null
     }
 
     async createAbxAction(body: {
-        runtime: ActionRuntime,
-        actionType: 'SCRIPT',
+        runtime: ActionRuntime
+        actionType: "SCRIPT"
         projectId: string
-        compressedContent: string, // base64
-        name: string,
-        description: string,
-        inputs: { [key: string]: string },
+        compressedContent: string // base64
+        name: string
+        description: string
+        inputs: { [key: string]: string }
         entrypoint: string
     }) {
-        return this.send("POST", '/abx/api/resources/actions', { body })
+        return this.send("POST", "/abx/api/resources/actions", { body })
     }
 
-    async updateAbxAction(actionId: string, body: {
-        runtime: ActionRuntime,
-        actionType: 'SCRIPT',
-        projectId: string
-        compressedContent: string, // base64
-        name: string,
-        description: string,
-        inputs: { [key: string]: string },
-        entrypoint: string
-    }) {
+    async updateAbxAction(
+        actionId: string,
+        body: {
+            runtime: ActionRuntime
+            actionType: "SCRIPT"
+            projectId: string
+            compressedContent: string // base64
+            name: string
+            description: string
+            inputs: { [key: string]: string }
+            entrypoint: string
+        }
+    ) {
         return this.send("PUT", `/abx/api/resources/actions/${actionId}`, { body })
     }
 
-    async runAbxAction(actionId: string, body: {
-        metadata: { actionTrigger: 'test' },
-        inputs: { [key: string]: any },
-        projectId: string
-    }) {
-        return this.send("POST", `/abx/api/resources/actions/${actionId}/action-runs`, { body });
+    async runAbxAction(
+        actionId: string,
+        body: {
+            metadata: { actionTrigger: "test" }
+            inputs: { [key: string]: any }
+            projectId: string
+        }
+    ) {
+        return this.send("POST", `/abx/api/resources/actions/${actionId}/action-runs`, { body })
     }
 
     async getAbxActionRun(runId: string) {
-        return this.send("GET", `/abx/api/resources/action-runs/${runId}`);
+        return this.send("GET", `/abx/api/resources/action-runs/${runId}`)
     }
 
     // -----------------------------------------------------------

@@ -138,13 +138,11 @@ export const TASKS_BY_TOOLCHAIN_PARENT: Record<ProjectArchetypes, VrealizeTaskCo
     [ProjectArchetypes.Polyglot]: [
         {
             label: "Build",
-            command:
-                "mvn clean package"
+            command: "mvn clean package"
         },
         {
             label: "Test",
-            command:
-                "mvn test"
+            command: "mvn test"
         },
         {
             label: "Push",
@@ -156,13 +154,11 @@ export const TASKS_BY_TOOLCHAIN_PARENT: Record<ProjectArchetypes, VrealizeTaskCo
     [ProjectArchetypes.Serverless]: [
         {
             label: "Build",
-            command:
-                "mvn clean package"
+            command: "mvn clean package"
         },
         {
             label: "Test",
-            command:
-                "mvn test"
+            command: "mvn test"
         }
     ]
 }

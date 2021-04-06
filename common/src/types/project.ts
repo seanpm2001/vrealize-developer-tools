@@ -5,7 +5,15 @@
 
 import * as vscode from "vscode"
 
-export type ProjectTypeId = "vro-ts" | "vro-js" | "vro-xml" | "vro-mixed" | "vra-yaml" | "vra-vro" | "vra-ng" | "polyglot"
+export type ProjectTypeId =
+    | "vro-ts"
+    | "vro-js"
+    | "vro-xml"
+    | "vro-mixed"
+    | "vra-yaml"
+    | "vra-vro"
+    | "vra-ng"
+    | "polyglot"
 
 export interface ProjectType extends vscode.QuickPickItem {
     id: ProjectTypeId
@@ -13,11 +21,11 @@ export interface ProjectType extends vscode.QuickPickItem {
 }
 
 export interface PolyglotType extends vscode.QuickPickItem {
-    id: 'vro' | 'abx'
+    id: "vro" | "abx"
 }
 
 export interface PolyglotRuntime extends vscode.QuickPickItem {
-    id: 'nodejs' | 'python' | 'powershell'
+    id: "nodejs" | "python" | "powershell"
 }
 
 export interface ProjectPickInfo {
@@ -26,7 +34,7 @@ export interface ProjectPickInfo {
     name: string
     workflowsPath?: string
     destination?: vscode.Uri
-    completed: boolean,
+    completed: boolean
     polyglotType?: PolyglotType
     polyglotRuntime?: PolyglotRuntime
 }

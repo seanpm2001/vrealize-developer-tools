@@ -46,7 +46,7 @@ export enum Commands {
     PackagePolyglot = "vrdev.polyglot.package",
     PushPolyglot = "vrdev.polyglot.push",
     RunPolyglot = "vrdev.polyglot.run",
-    DebugPolyglot = "vrdev.polyglot.debug",
+    DebugPolyglot = "vrdev.polyglot.debug"
 }
 
 export enum FixCommands {
@@ -113,5 +113,5 @@ export enum ProjectArchetypes {
     Vra = "com.vmware.pscoe.vra:vra-package",
     VraNg = "com.vmware.pscoe.vra-ng:vra-ng-package",
     Polyglot = "com.vmware.pscoe.polyglot:polyglot-project",
-    Serverless = "com.vmware.pscoe.serverless:serverless-project",
+    Serverless = "com.vmware.pscoe.serverless:serverless-project"
 }

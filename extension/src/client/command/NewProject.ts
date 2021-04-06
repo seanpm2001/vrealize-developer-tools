@@ -5,7 +5,16 @@
 
 import * as path from "path"
 
-import { AutoWire, Logger, MavenCliProxy, PolyglotRuntime, PolyglotType, ProjectPickInfo, ProjectType, ProjectTypeId } from "vrealize-common"
+import {
+    AutoWire,
+    Logger,
+    MavenCliProxy,
+    PolyglotRuntime,
+    PolyglotType,
+    ProjectPickInfo,
+    ProjectType,
+    ProjectTypeId
+} from "vrealize-common"
 import * as vscode from "vscode"
 
 import { Commands, Patterns } from "../constants"
@@ -67,38 +76,38 @@ const projectTypes: ProjectType[] = [
         id: "polyglot",
         label: "Polyglot action",
         containsWorkflows: false,
-        description: "Polyglot action",
-    },
+        description: "Polyglot action"
+    }
 ]
 
 const polyglotTypes: PolyglotType[] = [
     {
-        id: 'vro',
-        label: 'VRO',
-        description: 'vRealize Orchestrator Polyglot action'
+        id: "vro",
+        label: "VRO",
+        description: "vRealize Orchestrator Polyglot action"
     },
     {
-        id: 'abx',
-        label: 'ABX',
-        description: 'vRealize Automation Action Based Extensibility'
+        id: "abx",
+        label: "ABX",
+        description: "vRealize Automation Action Based Extensibility"
     }
 ]
 
 const polyglotRuntimes: PolyglotRuntime[] = [
     {
-        id: 'nodejs',
-        label: 'NodeJS',
-        description: 'NodeJS'
+        id: "nodejs",
+        label: "NodeJS",
+        description: "NodeJS"
     },
     {
-        id: 'python',
-        label: 'Python',
-        description: 'Python'
+        id: "python",
+        label: "Python",
+        description: "Python"
     },
     {
-        id: 'powershell',
-        label: 'PowerShell',
-        description: 'PowerShell'
+        id: "powershell",
+        label: "PowerShell",
+        description: "PowerShell"
     }
 ]
 
@@ -118,7 +127,6 @@ export class NewProject extends Command<void> {
     }
 
     async execute(context: vscode.ExtensionContext): Promise<void> {
-
         const availableProjectTypes = projectTypes
             // remove the Polyglot project form the list
             .filter(pt => pt.id !== "polyglot" || this.config.vrdev.experimental.polyglot)
@@ -135,7 +143,7 @@ export class NewProject extends Command<void> {
     private buildStepTree(projectTypes: ProjectType[]): StepNode<QuickPickStep> {
         const rootNode: StepNode<QuickPickStep> = {
             value: new ProjectTypePickStep(projectTypes),
-            next: (state) => state.projectType.id as ProjectTypeId === 'polyglot' ? polyglotTypeNode : groupIdNode
+            next: state => ((state.projectType.id as ProjectTypeId) === "polyglot" ? polyglotTypeNode : groupIdNode)
         }
 
         const polyglotTypeNode: StepNode<QuickPickStep> = {

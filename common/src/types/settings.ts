@@ -34,8 +34,8 @@ export interface TasksInfo {
 }
 
 export interface ExperimentalFlags {
-    typescript: boolean,
-    polyglot: boolean,
+    typescript: boolean
+    polyglot: boolean
 }
 
 export interface BuildTools {

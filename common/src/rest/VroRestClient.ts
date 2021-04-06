@@ -589,15 +589,15 @@ export class VroRestClient {
     }
 
     async getActionSubcategories(): Promise<any> {
-        return this.send("GET", "catalog/System/Catalog/Actions/sub-categories");
+        return this.send("GET", "catalog/System/Catalog/Actions/sub-categories")
     }
 
     async getCategoryById(categoryId: string): Promise<any> {
-        return this.send("GET", `categories/${categoryId}`);
+        return this.send("GET", `categories/${categoryId}`)
     }
 
     async getActionById(actionId: string): Promise<any> {
-        return this.send("GET", `actions/${actionId}`);
+        return this.send("GET", `actions/${actionId}`)
     }
 
     async getActionContentsById(actionId: string): Promise<any> {
@@ -605,73 +605,78 @@ export class VroRestClient {
     }
 
     async createPolyglotAction(body: {
-        module: string,
-        name: string,
-        description: string,
-        runtime: ActionRuntime,
-        version: string,
-        entryPoint: string,
-        'output-type': string,
-        'input-parameters': any
+        "module": string
+        "name": string
+        "description": string
+        "runtime": ActionRuntime
+        "version": string
+        "entryPoint": string
+        "output-type": string
+        "input-parameters": any
     }) {
-        return this.send("POST", 'actions', { body });
+        return this.send("POST", "actions", { body })
     }
 
-    async updatePolyglotAction(actionId: string, body: {
-        module: string,
-        name: string,
-        runtime: ActionRuntime,
-        version: string,
-        entryPoint: string,
-        'output-type': string,
-        'input-parameters': any
-    }) {
-        return this.send("PUT", `actions/${actionId}`, { body });
+    async updatePolyglotAction(
+        actionId: string,
+        body: {
+            "module": string
+            "name": string
+            "runtime": ActionRuntime
+            "version": string
+            "entryPoint": string
+            "output-type": string
+            "input-parameters": any
+        }
+    ) {
+        return this.send("PUT", `actions/${actionId}`, { body })
     }
 
     async updatePolyglotActionBundle(actionId: string, content: Uint8Array) {
-
         // create form data
         const formData = {
             bundle: {
                 value: content,
                 options: {
                     filepath: this.settings.polyglotBundle,
-                    contentType: 'application/zip'
+                    contentType: "application/zip"
                 }
             }
         }
 
-        return this.send("POST", `actions/${actionId}/bundle`, { json: false, formData });
+        return this.send("POST", `actions/${actionId}/bundle`, { json: false, formData })
     }
 
-    async runPolyglotAction(actionId: string, body: {
-        'async-execution': boolean,
-        parameters: {
-            name: string,
-            type: string,
-            value: {
-                [key: string]: any,
-            }
-        }[],
-        breakpoints?: {
-            breakpoint: {
-                lineNumber: number
-            }
-        }[]
-    }) {
+    async runPolyglotAction(
+        actionId: string,
+        body: {
+            "async-execution": boolean
+            "parameters": {
+                name: string
+                type: string
+                value: {
+                    [key: string]: any
+                }
+            }[]
+            "breakpoints"?: {
+                breakpoint: {
+                    lineNumber: number
+                }
+            }[]
+        }
+    ) {
         return this.send("POST", `actions/${actionId}/executions`, { body })
     }
 
     async getPolyglotActionRun(runId: string) {
-        return this.send("GET", `actions/runs/${runId}`);
+        return this.send("GET", `actions/runs/${runId}`)
     }
 
-    async getPolyglotActionRunLogs(runId: string, level: string = 'debug') {
-        return this.send("GET", `actions/${runId}/logs`, { qs: { conditions: [`severity=${level}`] } });
+    async getPolyglotActionRunLogs(runId: string, level: string = "debug") {
+        return this.send("GET", `actions/${runId}/logs`, { qs: { conditions: [`severity=${level}`] } })
     }
 
     async getPolyglotDebugRunConfig(runId: string) {
-        return this.send("GET", `debugger/${runId}/configuration`);
+        return this.send("GET", `debugger/${runId}/configuration`)
     }
 }
