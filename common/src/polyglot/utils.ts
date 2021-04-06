@@ -42,8 +42,8 @@ export function notUndefined<T>(x: T | undefined): x is T {
  * @param func
  * @param ms
  */
-export async function delay(func: () => void, ms: number = 1) {
-    await new Promise((resolve, reject) => {
+export async function delay(func: () => void, ms: number = 1): Promise<void> {
+    return await new Promise((resolve, reject) => {
         setTimeout(() => {
             try {
                 func();
@@ -62,8 +62,8 @@ export async function delay(func: () => void, ms: number = 1) {
  * @param interval
  * @param timeoout
  */
-export async function poll(func: () => Promise<boolean>, interval: number = 100, timeoout: number = 1000) {
-    await new Promise(async (resolve, reject) => {
+export async function poll(func: () => Promise<boolean>, interval: number = 100, timeoout: number = 1000): Promise<void> {
+    return await new Promise(async (resolve, reject) => {
 
         let poller: NodeJS.Timeout;
         const start = Date.now();

@@ -23,7 +23,6 @@ import {
     WorkflowParam,
     WorkflowState
 } from "./vro-model"
-
 import { Logger, MavenCliProxy, promise, sleep } from ".."
 
 export class VroRestClient {
@@ -45,7 +44,7 @@ export class VroRestClient {
         return this.settings.activeProfile.getOptional("vro.auth", "basic")
     }
 
-    private async getAuth(): Promise<object> {
+    private async getAuth(): Promise<Record<string, unknown>> {
         let auth: Auth
         switch (this.authMethod.toLowerCase()) {
             case "vra":
@@ -219,9 +218,7 @@ export class VroRestClient {
         for (const log of response.logs) {
             const e = log.entry
             const description = e["long-description"] ? e["long-description"] : e["short-description"]
-            if (description.indexOf("*** End of execution stack.") > 0 ||
-                description.startsWith("__item_stack:/")
-            ) {
+            if (description.indexOf("*** End of execution stack.") > 0 || description.startsWith("__item_stack:/")) {
                 continue
             }
 

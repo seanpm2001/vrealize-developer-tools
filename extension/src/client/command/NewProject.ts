@@ -196,7 +196,7 @@ export class NewProject extends Command<void> {
                     canceled = true
                 })
 
-                return new Promise(async (resolve, reject) => {
+                return new Promise<void>(async (resolve, reject) => {
                     if (!this.state.destination) {
                         reject("Destination folder was not selected")
                         return
@@ -341,7 +341,7 @@ class WorkflowsPathInputStep implements QuickInputStep {
     }
 
     shouldSkip(state: StepState<State>): boolean {
-        const shouldSkip = !(state.projectType?.containsWorkflows)
+        const shouldSkip = !state.projectType?.containsWorkflows
         if (shouldSkip) {
             state.completed = true
             return true

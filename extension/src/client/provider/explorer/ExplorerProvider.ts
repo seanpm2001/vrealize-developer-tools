@@ -24,13 +24,13 @@ import {
 export class ExplorerProvider implements vscode.TreeDataProvider<AbstractNode>, Registrable, vscode.Disposable {
     private readonly logger = Logger.get("ExplorerProvider")
 
-    private onDidChangeTreeDataEmitter: vscode.EventEmitter<AbstractNode> = new vscode.EventEmitter<AbstractNode>()
+    private onDidChangeTreeDataEmitter = new vscode.EventEmitter<AbstractNode | undefined>()
     private context: vscode.ExtensionContext
     private restClient: VroRestClient
     private rootNodes: AbstractNode[] = []
     private tree: vscode.TreeView<AbstractNode>
 
-    readonly onDidChangeTreeData: vscode.Event<AbstractNode> = this.onDidChangeTreeDataEmitter.event
+    readonly onDidChangeTreeData: vscode.Event<AbstractNode | undefined> = this.onDidChangeTreeDataEmitter.event
 
     constructor(environment: EnvironmentManager, private config: ConfigurationManager) {
         this.restClient = new VroRestClient(config, environment)

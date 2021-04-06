@@ -216,7 +216,7 @@ export class VroActionIntegration {
      * Print the execution logs to the execution output channel
      * @param executionId
      */
-    private printExecutionLogs(executionId: string, outputChannel: vscode.OutputChannel) {
+    private printExecutionLogs(executionId: string, outputChannel: vscode.OutputChannel): Promise<void> {
 
         return new Promise(resolve => {
             // allow some time for logs to appear

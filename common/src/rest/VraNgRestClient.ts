@@ -90,7 +90,7 @@ export class VraNgRestClient {
         })
     }
 
-    private async getAuth(): Promise<object> {
+    private async getAuth(): Promise<Record<string, unknown>> {
         const token = await this.identity.read(this.host)
 
         if (!token) {
@@ -207,11 +207,19 @@ export class VraNgRestClient {
         return this.unwrapPages(blueprints, "/blueprint/api/blueprints")
     }
 
-    async createBlueprint(body: { name: string; projectId: string; content: string, description: string }): Promise<any> {
+    async createBlueprint(body: {
+        name: string
+        projectId: string
+        content: string
+        description: string
+    }): Promise<any> {
         return this.send("POST", "/blueprint/api/blueprints", { body })
     }
 
-    async updateBlueprint(id: string, body: { name: string; projectId: string; content: string, description: string }): Promise<void> {
+    async updateBlueprint(
+        id: string,
+        body: { name: string; projectId: string; content: string; description: string }
+    ): Promise<void> {
         return this.send("PUT", `/blueprint/api/blueprints/${id}`, { body })
     }
 
@@ -220,7 +228,7 @@ export class VraNgRestClient {
         projectId: string
         blueprintId?: string
         content?: string
-        inputs?: object
+        inputs?: Record<string, unknown>
     }): Promise<Deployment> {
         return this.send("POST", "/blueprint/api/blueprint-requests", { body })
     }

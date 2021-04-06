@@ -3,7 +3,7 @@
   "name": "vrealize-developer-tools",
   "displayName": "vRealize Developer Tools",
   "description": "Provides code intelligence features and enables a more developer-friendly experience when creating VMware vRealize Orchestrator and VMware vRealize Automation content.",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "publisher": "vmware-pscoe",
   "license": "MIT",
   "homepage": "https://github.com/vmware/vrealize-developer-tools",
@@ -15,8 +15,9 @@
     "url": "https://github.com/vmware/vrealize-developer-tools.git"
   },
   "engines": {
-    "node": ">=10.0.0",
-    "vscode": "^1.40.0"
+    "node": ">=12.0.0",
+    "npm": ">=7.0.0",
+    "vscode": "^1.54.0"
   },
   "categories": [
     "Programming Languages"
@@ -38,6 +39,7 @@
     "onCommand:vrdev.open.config",
     "onCommand:vrdev.open.resource",
     "onCommand:vrdev.run.action",
+    "onCommand:vrdev.toggle.typescript",
     "onCommand:vrdev.vra.auth.configure",
     "onCommand:vrdev.blueprint.create",
     "onCommand:vrdev.blueprint.fetch",
@@ -201,6 +203,11 @@
           "light": "assets/icons/light/zap.svg",
           "dark": "assets/icons/dark/zap.svg"
         }
+      },
+      {
+        "command": "vrdev.toggle.typescript",
+        "title": "Toggle TypeScript Support (Experimental)",
+        "category": "vRealize"
       },
       {
         "command": "vrdev.vra.auth.configure",
@@ -516,11 +523,11 @@
           "description": "",
           "scope": "window"
         },
-        "vrdev.experimental.polyglot": {
+        "vrdev.experimental.typescript": {
           "type": "boolean",
           "required": false,
           "default": false,
-          "description": "Enables experimental Polyglot support.",
+          "description": "Enables experimental vRO TypeScript support.",
           "scope": "application"
         },
         "vrdev.buildTools.defaultVersion": {
@@ -545,18 +552,6 @@
           ],
           "markdownDescription": "Specifies how the _Explorer_ view will display vRO action packages",
           "scope": "window"
-        },
-        "vrdev.polyglot.out": {
-          "type": "string",
-          "default": "out",
-          "scope": "application",
-          "description": "Directory that contains intermediate Polyglot/ABX bundle contents"
-        },
-        "vrdev.polyglot.bundle": {
-          "type": "string",
-          "default": "dist/bundle.zip",
-          "scope": "application",
-          "description": "Path to the generated Polyglot/ABX bundle archive"
         }
       }
     },
@@ -576,78 +571,76 @@
     "vro-language-server": "language-server/out/public"
   },
   "devDependencies": {
-    "@types/adm-zip": "^0.4.32",
-    "@types/chokidar": "~1.7.5",
-    "@types/fs-extra": "~5.0.4",
-    "@types/glob": "7.1.1",
-    "@types/jest": "^24.9.1",
-    "@types/js-yaml": "^3.12.5",
-    "@types/jwt-decode": "^2.2.1",
+    "@types/adm-zip": "^0.4.33",
+    "@types/fs-extra": "~9.0.8",
+    "@types/glob": "7.1.3",
+    "@types/jest": "^26.0.21",
     "@types/keytar": "^4.4.2",
-    "@types/lodash": "^4.14.149",
-    "@types/micromatch": "^3.1.1",
-    "@types/node": "^10.5.6",
-    "@types/request": "^2.48.3",
+    "@types/lodash": "^4.14.168",
+    "@types/micromatch": "^4.0.1",
+    "@types/node": "^14.14.35",
+    "@types/request": "^2.48.5",
     "@types/request-promise-native": "^1.0.17",
-    "@types/semver": "^6.0.0",
-    "@types/tmp": "^0.1.0",
-    "@types/vscode": "1.40.0",
-    "@typescript-eslint/eslint-plugin": "^2.7.0",
-    "@typescript-eslint/parser": "^2.7.0",
-    "codecov": "^3.7.1",
-    "eslint": "^6.6.0",
-    "eslint-config-prettier": "^6.5.0",
-    "eslint-plugin-header": "^3.0.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-prettier": "^3.1.2",
+    "@types/semver": "^7.3.4",
+    "@types/tmp": "^0.2.0",
+    "@types/vscode": "1.54.0",
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/parser": "^4.18.0",
+    "codecov": "^3.8.1",
+    "eslint": "^7.22.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-header": "3.1.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-prettier": "^3.3.1",
     "fancy-log": "^1.3.3",
-    "gulp": "^4.0.0",
+    "gulp": "^4.0.2",
     "gulp-eslint": "^6.0.0",
     "gulp-if": "^3.0.0",
-    "jest": "^25.1.0",
+    "jest": "^26.6.3",
     "jest-create-mock-instance": "^1.1.0",
-    "jest-extended": "0.11.2",
+    "jest-extended": "0.11.5",
     "merge-stream": "^2.0.0",
     "minimist": "^1.2.5",
-    "prettier": "^1.19.1",
-    "ts-jest": "^25.0.0",
-    "typescript": "~3.7.2",
-    "vsce": "^1.77.0"
+    "prettier": "^2.2.1",
+    "ts-jest": "^26.5.4",
+    "typescript": "~4.2.3",
+    "vsce": "^1.87.0"
   },
   "dependencies": {
     "@vmware-pscoe/polyglotpkg": "./tools/polyglotpkg",
-    "adm-zip": "^0.4.13",
-    "chokidar": "~2.0.4",
-    "fast-xml-parser": "3.12.20",
-    "fs-extra": "~7.0.0",
-    "globby": "^11.0.1",
-    "js-yaml": "^3.14.0",
-    "jsonc-parser": "^2.1.0",
-    "jwt-decode": "^2.2.0",
-    "lodash": "^4.17.19",
+    "adm-zip": "^0.5.4",
+    "chokidar": "~3.5.1",
+    "estraverse": "^5.2.0",
+    "fast-xml-parser": "3.19.0",
+    "fs-extra": "~9.1.0",
+    "glob": "^7.1.6",
+    "jsdoc": "^3.6.6",
+    "jsonc-parser": "^3.0.0",
+    "jwt-decode": "^3.1.2",
+    "lodash": "^4.17.21",
     "micromatch": "^4.0.2",
     "module-alias": "^2.2.2",
-    "moment": "^2.24.0",
-    "protobufjs": "^6.8.9",
+    "moment": "^2.29.1",
+    "protobufjs": "^6.10.2",
     "reflect-metadata": "^0.1.13",
-    "request": "^2.87.0",
-    "request-promise-native": "^1.0.7",
-    "semver": "^6.1.1",
-    "tmp": "^0.1.0",
-    "vscode-jsonrpc": "^4.0.0",
-    "vscode-languageclient": "^5.2.1",
-    "vscode-languageserver": "^5.2.1",
-    "vscode-languageserver-protocol": "^3.14.1",
-    "vscode-languageserver-types": "^3.14.0",
-    "vscode-uri": "^2.0.0",
-    "yaml": "^1.10.0"
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.9",
+    "semver": "^7.3.4",
+    "tmp": "^0.2.1",
+    "uglify-js": "^3.13.1",
+    "vscode-jsonrpc": "^6.0.0",
+    "vscode-languageclient": "^7.0.0",
+    "vscode-languageserver": "^7.0.0",
+    "vscode-languageserver-protocol": "^3.16.0",
+    "vscode-languageserver-textdocument": "^1.0.1",
+    "vscode-languageserver-types": "^3.16.0",
+    "vscode-uri": "^3.0.2",
+    "yaml": "^1.10.2"
   },
   "optionalDependencies": {
-    "fsevents": "1.2.13"
+    "fsevents": "~2.3.1"
   },
   "scripts": {
-    "preinstall": "node build/preinstall.js",
-    "build:vropkg": "cd tools/vropkg && yarn install && yarn build",
-    "build:polyglotpkg": "cd tools/polyglotpkg && yarn install && yarn build"
+    "preinstall": "node build/preinstall.js"
   }
 }
