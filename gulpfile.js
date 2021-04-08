@@ -160,7 +160,7 @@ gulp.task(
     })
 )
 
-gulp.task("build:vropkg", done => {
+gulp.task("build:polyglotpkg", done => {
 
     done()
 });
